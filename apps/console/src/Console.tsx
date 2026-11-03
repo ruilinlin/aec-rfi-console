@@ -1,9 +1,11 @@
 import { SheetFrame, TitleBlock } from "@rfi/drafting-kit";
 import { useReducer } from "react";
+import { LiveSection } from "./LiveSection";
 import { PipelineSteps } from "./PipelineSteps";
 import { ResponseCard } from "./ResponseCard";
 import { StatusBadge } from "./StatusBadge";
 import { SCENARIOS, type Scenario } from "./scenarios";
+import { useBackendStatus } from "./useBackendStatus";
 import "./Console.css";
 
 type State = { view: "idle"; scenario: null } | { view: "playing" | "done"; scenario: Scenario };
@@ -23,6 +25,7 @@ function reducer(state: State, action: Action): State {
 /** The replay-first RFI console. Live mode arrives in the next commit. */
 export function Console() {
   const [state, dispatch] = useReducer(reducer, { view: "idle", scenario: null });
+  const backend = useBackendStatus();
   const stages = state.scenario?.result.usage?.stages ?? [];
   return (
     <div className="wrap">
@@ -47,7 +50,7 @@ export function Console() {
           <div className="co-sub">
             aec-rfi-agent — cited answers · revision-aware · gaps flagged, not guessed
           </div>
-          <StatusBadge />
+          <StatusBadge status={backend} />
 
           <section className="co-sec">
             <div className="co-sec-hd">
@@ -99,6 +102,8 @@ export function Console() {
               />
             </section>
           ) : null}
+
+          <LiveSection status={backend} />
         </div>
       </SheetFrame>
     </div>

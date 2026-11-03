@@ -1,31 +1,20 @@
-import { type BackendStatus, probeHealth } from "@rfi/api-client";
-import { useEffect, useState } from "react";
+import type { BackendStatus } from "@rfi/api-client";
+import { useBackendStatus } from "./useBackendStatus";
 import "./StatusBadge.css";
 
-const API_URL: string = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+export interface StatusBadgeProps {
+  /** Controlled status; omitted = the badge probes on its own (kitchen sink). */
+  status?: BackendStatus | "probing";
+}
 
-/**
- * One-shot backend probe rendered in the drawing language. "probing" shows
- * until the fail-closed probeHealth resolves; a page refresh re-probes.
- * Polling and the Go Live switch belong to the replay-first feature.
- */
-export function StatusBadge() {
-  const [status, setStatus] = useState<BackendStatus | "probing">("probing");
-  useEffect(() => {
-    let cancelled = false;
-    probeHealth(API_URL).then((result) => {
-      if (!cancelled) {
-        setStatus(result);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+/** Backend status in the drawing language. */
+export function StatusBadge({ status }: StatusBadgeProps) {
+  const own = useBackendStatus();
+  const shown = status ?? own;
   return (
-    <span className={`dk-status dk-status--${status}`}>
+    <span className={`dk-status dk-status--${shown}`}>
       <span className="dk-status-dot" />
-      BACKEND: {status.toUpperCase()}
+      BACKEND: {shown.toUpperCase()}
     </span>
   );
 }
