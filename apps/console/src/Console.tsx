@@ -1,0 +1,106 @@
+import { SheetFrame, TitleBlock } from "@rfi/drafting-kit";
+import { useReducer } from "react";
+import { PipelineSteps } from "./PipelineSteps";
+import { ResponseCard } from "./ResponseCard";
+import { StatusBadge } from "./StatusBadge";
+import { SCENARIOS, type Scenario } from "./scenarios";
+import "./Console.css";
+
+type State = { view: "idle"; scenario: null } | { view: "playing" | "done"; scenario: Scenario };
+
+type Action = { type: "play"; scenario: Scenario } | { type: "finished" };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "play":
+      return { view: "playing", scenario: action.scenario };
+    case "finished":
+      // A stray onDone after a reset must not resurrect a result card.
+      return state.view === "playing" ? { view: "done", scenario: state.scenario } : state;
+  }
+}
+
+/** The replay-first RFI console. Live mode arrives in the next commit. */
+export function Console() {
+  const [state, dispatch] = useReducer(reducer, { view: "idle", scenario: null });
+  const stages = state.scenario?.result.usage?.stages ?? [];
+  return (
+    <div className="wrap">
+      <SheetFrame
+        titleBlock={
+          <TitleBlock
+            firm="R. SUN"
+            firmSub="AI · AEC ENGINEERING"
+            project="Riverside Transit Hub"
+            drawingTitle="RFI Response Console"
+            drawn="RFI-01"
+            checked="R. Sun"
+            date="26-11-03"
+            scale="N.T.S."
+            revisions={[{ rev: "A", date: "26-11-03", description: "REPLAY-FIRST ISSUE" }]}
+            sheetNumber="RFI-01"
+          />
+        }
+      >
+        <div className="console">
+          <h1 className="co-title">RFI Field Console</h1>
+          <div className="co-sub">
+            aec-rfi-agent — cited answers · revision-aware · gaps flagged, not guessed
+          </div>
+          <StatusBadge />
+
+          <section className="co-sec">
+            <div className="co-sec-hd">
+              <span>Recorded scenarios</span>
+              <span>real responses, replayed</span>
+            </div>
+            <div className="co-chips">
+              {SCENARIOS.map((scenario) => (
+                <button
+                  type="button"
+                  key={scenario.id}
+                  className="co-chip"
+                  onClick={() => dispatch({ type: "play", scenario })}
+                >
+                  <span className="co-chip-tag">{scenario.tag}</span>
+                  {scenario.question.split(" ").slice(0, 6).join(" ")}…
+                </button>
+              ))}
+            </div>
+            <div className="co-question">
+              {state.scenario ? state.scenario.question : "Select a scenario above to replay it."}
+            </div>
+          </section>
+
+          {state.scenario ? (
+            <section className="co-sec">
+              <div className="co-sec-hd">
+                <span>Agent pipeline</span>
+                <span>recorded stage timings</span>
+              </div>
+              {/* scenario non-null narrows view to playing|done, so playing is simply true */}
+              <PipelineSteps
+                stages={stages}
+                playing
+                onDone={() => dispatch({ type: "finished" })}
+              />
+            </section>
+          ) : null}
+
+          {state.view === "done" ? (
+            <section className="co-sec">
+              <div className="co-sec-hd">
+                <span>Response</span>
+                <span>{state.scenario.tag}</span>
+              </div>
+              <ResponseCard
+                result={state.scenario.result}
+                provenance={{ kind: "replay", recordedAt: state.scenario.recordedAt }}
+              />
+            </section>
+          ) : null}
+        </div>
+      </SheetFrame>
+    </div>
+  );
+}
