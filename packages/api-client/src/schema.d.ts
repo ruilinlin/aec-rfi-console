@@ -76,7 +76,7 @@ export interface components {
              * Superseded Notes
              * @default []
              */
-            superseded_notes: string[];
+            superseded_notes?: string[];
             usage?: components["schemas"]["UsageSummary"] | null;
         };
         /** GapReport */
@@ -85,7 +85,7 @@ export interface components {
              * Closest Matches
              * @default []
              */
-            closest_matches: components["schemas"]["Citation"][];
+            closest_matches?: components["schemas"]["Citation"][];
             /** Reason */
             reason: string;
             /** Rfi Id */
@@ -109,7 +109,7 @@ export interface components {
              * References
              * @default []
              */
-            references: string[];
+            references?: string[];
         };
         /** UsageStage */
         UsageStage: {
