@@ -5,6 +5,7 @@ import {
   TitleBlock,
   VerdictStamp,
 } from "@rfi/drafting-kit";
+import { StatusBadge } from "./StatusBadge";
 
 /**
  * Kitchen-sink page: every drafting-kit component rendered with sample data.
@@ -32,6 +33,7 @@ export function App() {
       >
         <div className="kitchen">
           <h1>Drafting-Kit Sampler</h1>
+          <StatusBadge />
 
           <h2>Verdict stamps</h2>
           <div className="row">

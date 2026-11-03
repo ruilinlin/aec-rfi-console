@@ -9,5 +9,14 @@
   },
   "linter": { "enabled": true, "rules": { "recommended": true } },
   "javascript": { "formatter": { "quoteStyle": "double" } },
-  "files": { "ignore": ["dist", "node_modules", ".astro", "pnpm-lock.yaml"] }
+  "files": {
+    "ignore": [
+      "dist",
+      "node_modules",
+      ".astro",
+      "pnpm-lock.yaml",
+      "packages/api-client/openapi.json",
+      "packages/api-client/src/schema.d.ts"
+    ]
+  }
 }

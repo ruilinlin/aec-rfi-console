@@ -1,0 +1,31 @@
+.dk-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--cad);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 10.5px;
+  border: var(--hr) solid var(--hair);
+  background: var(--paper2);
+  padding: 4px 9px;
+  color: var(--ink2);
+}
+.dk-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink2);
+}
+.dk-status--online {
+  color: var(--ink);
+}
+.dk-status--online .dk-status-dot {
+  background: var(--green);
+}
+.dk-status--offline .dk-status-dot {
+  background: var(--ink2);
+}
+.dk-status--probing .dk-status-dot {
+  background: var(--amber);
+}
