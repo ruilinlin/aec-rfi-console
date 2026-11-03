@@ -1,0 +1,42 @@
+.dk-revnote {
+  position: relative;
+  padding: 10px 12px 10px 14px;
+  border: var(--med) solid var(--red);
+  background: rgba(192, 36, 26, 0.05);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink);
+  font-family: var(--mono);
+}
+.dk-revnote::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--red);
+}
+.dk-revnote-tag {
+  display: inline-block;
+  font-family: var(--cad);
+  font-weight: 700;
+  color: #fff;
+  background: var(--red);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  padding: 1px 7px 0;
+  margin-right: 8px;
+  text-transform: uppercase;
+}
+.dk-revnote-tag::before {
+  content: "▲ ";
+}
+.dk-revnote--amber {
+  border-color: var(--amber);
+  background: rgba(152, 104, 0, 0.06);
+}
+.dk-revnote--amber::before,
+.dk-revnote--amber .dk-revnote-tag {
+  background: var(--amber);
+}

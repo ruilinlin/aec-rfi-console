@@ -1,0 +1,65 @@
+.dk-stamp {
+  display: inline-block;
+  font-family: var(--cad);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 17px;
+  padding: 4px 13px 3px;
+  border: 2.5px solid;
+  border-radius: 2px;
+  position: relative;
+  transform: rotate(-3.5deg);
+  opacity: 0.92;
+  animation: dk-stampin 0.32s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+@keyframes dk-stampin {
+  0% {
+    opacity: 0;
+    transform: scale(1.6) rotate(-14deg);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-3.5deg);
+  }
+}
+.dk-stamp::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid;
+  border-radius: 1px;
+  opacity: 0.55;
+}
+.dk-stamp small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  margin-top: 1px;
+}
+.dk-stamp--answer {
+  color: var(--green);
+  border-color: var(--green);
+}
+.dk-stamp--gap {
+  color: var(--red);
+  border-color: var(--red);
+}
+.dk-stamp--conflict {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+.dk-stamp--naive {
+  color: var(--ink2);
+  border-color: var(--ink2);
+  transform: rotate(-2deg);
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dk-stamp {
+    animation: none;
+  }
+}
