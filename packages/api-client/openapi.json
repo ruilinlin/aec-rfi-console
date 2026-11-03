@@ -1,0 +1,369 @@
+{
+  "components": {
+    "schemas": {
+      "Citation": {
+        "properties": {
+          "chunk_id": {
+            "title": "Chunk Id",
+            "type": "string"
+          },
+          "quote_span": {
+            "title": "Quote Span",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "string"
+          },
+          "section_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Code"
+          },
+          "sheet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sheet"
+          }
+        },
+        "required": [
+          "chunk_id",
+          "section_code",
+          "revision",
+          "quote_span"
+        ],
+        "title": "Citation",
+        "type": "object"
+      },
+      "CitedResponse": {
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/Citation"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "rfi_id": {
+            "title": "Rfi Id",
+            "type": "string"
+          },
+          "rfi_type": {
+            "title": "Rfi Type",
+            "type": "string"
+          },
+          "superseded_notes": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Superseded Notes",
+            "type": "array"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsageSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "rfi_id",
+          "rfi_type",
+          "answer",
+          "citations"
+        ],
+        "title": "CitedResponse",
+        "type": "object"
+      },
+      "GapReport": {
+        "properties": {
+          "closest_matches": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/Citation"
+            },
+            "title": "Closest Matches",
+            "type": "array"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "rfi_id": {
+            "title": "Rfi Id",
+            "type": "string"
+          },
+          "searched": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Searched",
+            "type": "array"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsageSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "rfi_id",
+          "reason",
+          "searched"
+        ],
+        "title": "GapReport",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "RFIRequest": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "references": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "References",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "question"
+        ],
+        "title": "RFIRequest",
+        "type": "object"
+      },
+      "UsageStage": {
+        "properties": {
+          "cost_usd": {
+            "title": "Cost Usd",
+            "type": "number"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "latency_ms": {
+            "title": "Latency Ms",
+            "type": "integer"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage",
+          "latency_ms",
+          "input_tokens",
+          "output_tokens",
+          "cost_usd"
+        ],
+        "title": "UsageStage",
+        "type": "object"
+      },
+      "UsageSummary": {
+        "properties": {
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/UsageStage"
+            },
+            "title": "Stages",
+            "type": "array"
+          },
+          "total_cost_usd": {
+            "title": "Total Cost Usd",
+            "type": "number"
+          },
+          "total_latency_ms": {
+            "title": "Total Latency Ms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_latency_ms",
+          "total_cost_usd",
+          "stages"
+        ],
+        "title": "UsageSummary",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Drafts cited answers to construction RFIs; reports gaps instead of guessing.",
+    "title": "aec-rfi-agent",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Health Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health"
+      }
+    },
+    "/rfi": {
+      "post": {
+        "description": "Run the full agent on one RFI.\n\nThe response is a CitedResponse when governing evidence supports an\nanswer, and a GapReport when it does not. The drafted answer is for a\nlicensed professional to review; the agent never issues final answers.",
+        "operationId": "answer_rfi_rfi_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RFIRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/CitedResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GapReport"
+                    }
+                  ],
+                  "title": "Response Answer Rfi Rfi Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Answer Rfi"
+      }
+    }
+  }
+}
