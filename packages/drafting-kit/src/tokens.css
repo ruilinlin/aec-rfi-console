@@ -1,0 +1,36 @@
+/* Design tokens of the contract-drawing sheet, extracted 1:1 from the
+   original demo (demo.html :root). Pure black & white paper; red/green/amber
+   are reserved for verdicts and revision flags. Single light theme by design:
+   a drawing sheet is white paper and black ink. */
+:root {
+  /* paper and ink */
+  --paper: #ffffff;
+  --paper2: #f3f3f3;
+  --ink: #0c0c0c;
+  --ink2: #565656;
+  --hair: #cecece;
+  --hair2: #e6e6e6;
+
+  /* verdict palette */
+  --red: #c0241a;
+  --green: #1e7a42;
+  --amber: #986800;
+
+  /* typefaces (loaded in fonts.css) */
+  --cad: "Rajdhani", "DIN Alternate", "Arial Narrow", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  /* line-weight system: heavy border / medium rule / hairline */
+  --hvy: 2.5px;
+  --med: 1.4px;
+  --hr: 0.75px;
+
+  color-scheme: light;
+}
+
+/* CAD lettering utility, as in the demo sheet */
+.cad {
+  font-family: var(--cad);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

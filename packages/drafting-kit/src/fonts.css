@@ -1,0 +1,5 @@
+/* Typeface loading, exactly as the original demo sheet: Google Fonts CDN.
+   Rajdhani = DIN-style CAD lettering for headings/labels;
+   IBM Plex Mono = body/annotation text. Fallback stacks are defined in
+   tokens.css (--cad / --mono), so a blocked CDN degrades gracefully. */
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
