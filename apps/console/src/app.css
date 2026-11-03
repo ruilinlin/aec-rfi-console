@@ -1,0 +1,42 @@
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px 12px 24px;
+}
+.kitchen h1 {
+  font-family: var(--cad);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: clamp(24px, 4.2vw, 36px);
+  letter-spacing: 0.015em;
+  margin: 0 0 4px;
+  line-height: 0.95;
+  border-bottom: var(--hvy) solid var(--ink);
+  padding-bottom: 7px;
+}
+.kitchen h2 {
+  font-family: var(--cad);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink2);
+  font-size: 12px;
+  font-weight: 600;
+  margin: 22px 0 10px;
+  border-top: var(--med) solid var(--ink);
+  padding-top: 7px;
+}
+.row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
