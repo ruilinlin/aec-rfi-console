@@ -24,3 +24,7 @@ jobs:
         run: pnpm typecheck
       - name: Build
         run: pnpm build
+      - name: API type drift check
+        run: |
+          pnpm --filter @rfi/api-client generate
+          git diff --exit-code packages/api-client/openapi.json packages/api-client/src/schema.d.ts
