@@ -1,6 +1,6 @@
 import { type BackendStatus, type RfiResult, createRfiClient, isGapReport } from "@rfi/api-client";
 import { RevisionNote } from "@rfi/drafting-kit";
-import { useReducer, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { ResponseCard } from "./ResponseCard";
 import { API_URL } from "./useBackendStatus";
 import "./LiveSection.css";
@@ -58,6 +58,10 @@ export function LiveSection({ status }: LiveSectionProps) {
   const seqRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   const online = status === "online";
+
+  // Abort any in-flight live call on unmount: the backend would otherwise run
+  // the full multi-stage pipeline (and bill it) for an answer nobody can see.
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   async function run() {
     const trimmed = question.trim();
@@ -137,10 +141,7 @@ export function LiveSection({ status }: LiveSectionProps) {
         </RevisionNote>
       ) : null}
       {state.phase === "done" ? (
-        <>
-          <ResponseCard result={state.result} provenance={{ kind: "live", at: state.at }} />
-          {isGapReport(state.result) ? null : null}
-        </>
+        <ResponseCard result={state.result} provenance={{ kind: "live", at: state.at }} />
       ) : null}
     </section>
   );

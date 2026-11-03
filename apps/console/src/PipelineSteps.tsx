@@ -23,7 +23,12 @@ export interface PipelineStepsProps {
   /** Animation runs while true; flipping to false resets. */
   playing: boolean;
   timeScale?: number;
-  /** Fired exactly once when the last step completes (or synchronously under reduced motion). */
+  /**
+   * Fired once per play when the last step completes (synchronously under
+   * reduced motion). Like any React effect it double-invokes under dev
+   * StrictMode remounts - consumers must be idempotent, as Console's
+   * reducer is. Empty stages fire it immediately.
+   */
   onDone?: () => void;
 }
 

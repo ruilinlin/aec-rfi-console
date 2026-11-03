@@ -50,4 +50,34 @@ describe("Console replay flow", () => {
     });
     expect(screen.getByText("GAP REPORT")).toBeTruthy();
   });
+
+  it("replays the SAME scenario again instead of wedging in playing", async () => {
+    render(<Console />);
+    const chip = screen.getByRole("button", { name: /Superseded rev/ });
+
+    fireEvent.click(chip);
+    await act(async () => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(screen.getByText(/REPLAY · REC/)).toBeTruthy();
+
+    // The review's probe: a second click on the same chip must re-animate and
+    // land back on the card - not disappear it forever.
+    fireEvent.click(chip);
+    expect(screen.queryByText(/REPLAY · REC/)).toBeNull(); // animating again
+    await act(async () => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(screen.getByText(/REPLAY · REC/)).toBeTruthy();
+  });
+
+  it("replays the gap scenario through the full animation to the gap card", async () => {
+    render(<Console />);
+    fireEvent.click(screen.getByRole("button", { name: /Unanswerable/ }));
+    await act(async () => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(screen.getByText("GAP REPORT")).toBeTruthy();
+    expect(screen.getByText(/Searched without success/)).toBeTruthy();
+  });
 });

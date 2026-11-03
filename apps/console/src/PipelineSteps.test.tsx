@@ -58,4 +58,11 @@ describe("PipelineSteps", () => {
     expect(screen.getAllByText("✓")).toHaveLength(2);
     expect(onDone).toHaveBeenCalledTimes(1);
   });
+
+  it("fires onDone immediately for an empty stages array", () => {
+    const onDone = vi.fn();
+    render(<PipelineSteps stages={[]} playing onDone={onDone} />);
+    act(() => vi.advanceTimersByTime(0));
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
 });

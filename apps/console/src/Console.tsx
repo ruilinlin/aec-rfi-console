@@ -8,23 +8,31 @@ import { SCENARIOS, type Scenario } from "./scenarios";
 import { useBackendStatus } from "./useBackendStatus";
 import "./Console.css";
 
-type State = { view: "idle"; scenario: null } | { view: "playing" | "done"; scenario: Scenario };
+type State =
+  | { view: "idle"; scenario: null; playSeq: number }
+  | { view: "playing" | "done"; scenario: Scenario; playSeq: number };
 
 type Action = { type: "play"; scenario: Scenario } | { type: "finished" };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "play":
-      return { view: "playing", scenario: action.scenario };
+      // playSeq keys PipelineSteps so replaying the SAME scenario remounts it:
+      // identical stages/playing props never restart the effect, and without
+      // the remount a second click on the same chip wedges the view in
+      // "playing" forever.
+      return { view: "playing", scenario: action.scenario, playSeq: state.playSeq + 1 };
     case "finished":
       // A stray onDone after a reset must not resurrect a result card.
-      return state.view === "playing" ? { view: "done", scenario: state.scenario } : state;
+      return state.view === "playing"
+        ? { view: "done", scenario: state.scenario, playSeq: state.playSeq }
+        : state;
   }
 }
 
 /** The replay-first RFI console. Live mode arrives in the next commit. */
 export function Console() {
-  const [state, dispatch] = useReducer(reducer, { view: "idle", scenario: null });
+  const [state, dispatch] = useReducer(reducer, { view: "idle", scenario: null, playSeq: 0 });
   const backend = useBackendStatus();
   const stages = state.scenario?.result.usage?.stages ?? [];
   return (
@@ -83,6 +91,7 @@ export function Console() {
               </div>
               {/* scenario non-null narrows view to playing|done, so playing is simply true */}
               <PipelineSteps
+                key={state.playSeq}
                 stages={stages}
                 playing
                 onDone={() => dispatch({ type: "finished" })}

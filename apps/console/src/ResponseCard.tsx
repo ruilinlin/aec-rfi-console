@@ -59,7 +59,7 @@ function GapBody({ result }: { result: GapReport }) {
           <ul>
             {result.closest_matches.map((match) => (
               <li key={match.chunk_id}>
-                {match.chunk_id} — {match.section_code ?? match.sheet} @ {match.revision}
+                {match.chunk_id} — {match.section_code ?? match.sheet ?? "—"} @ {match.revision}
               </li>
             ))}
           </ul>

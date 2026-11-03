@@ -86,4 +86,38 @@ describe("LiveSection", () => {
     expect(screen.getByText("Answer B")).toBeTruthy();
     expect(screen.queryByText("Answer A")).toBeNull();
   });
+
+  it("ignores a blank question (the early-return is the only guard)", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    render(<LiveSection status="online" />);
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "   " } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Run" }));
+    });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("aborts the in-flight request on unmount", async () => {
+    let seenSignal: AbortSignal | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        (input: RequestInfo | URL, init?: RequestInit) =>
+          new Promise<Response>(() => {
+            // fetch(request, init): init.signal is the EFFECTIVE signal and
+            // overrides the Request's own - capture it first.
+            seenSignal =
+              init?.signal ?? (input instanceof Request ? input.signal : undefined) ?? undefined;
+          }),
+      ),
+    );
+    const { unmount } = render(<LiveSection status="online" />);
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "q" } });
+    fireEvent.click(screen.getByRole("button", { name: "Run" }));
+    await act(async () => {});
+    expect(seenSignal?.aborted).toBe(false);
+    unmount();
+    expect(seenSignal?.aborted).toBe(true);
+  });
 });
