@@ -1,0 +1,112 @@
+/* Ported 1:1 from the demo sheet's title block. */
+.dk-tb {
+  border-left: var(--med) solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--cad);
+}
+.dk-tb-cell {
+  padding: 7px 10px;
+  border-bottom: var(--hr) solid var(--hair);
+}
+.dk-tb-lbl {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--ink2);
+  text-transform: uppercase;
+}
+.dk-tb-val {
+  font-size: 16px;
+  line-height: 1.05;
+  margin-top: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.dk-tb-firm {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.dk-tb-firm span {
+  display: block;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--ink2);
+  margin-top: 2px;
+}
+.dk-tb-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.dk-tb-grid2 .dk-tb-cell {
+  border-right: var(--hr) solid var(--hair);
+}
+.dk-tb-grid2 .dk-tb-cell:last-child {
+  border-right: 0;
+}
+.dk-tb-revtbl {
+  margin-top: auto;
+}
+.dk-tb-rh,
+.dk-tb-revrow {
+  display: grid;
+  grid-template-columns: 26px 66px 1fr;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+}
+.dk-tb-rh {
+  color: var(--ink2);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  border-bottom: var(--hr) solid var(--hair);
+  text-transform: uppercase;
+}
+.dk-tb-rh > span,
+.dk-tb-revrow > span {
+  padding: 4px 6px;
+  border-right: var(--hr) solid var(--hair2);
+}
+.dk-tb-revrow > span:last-child,
+.dk-tb-rh > span:last-child {
+  border-right: 0;
+}
+.dk-tb-revrow {
+  border-bottom: var(--hr) solid var(--hair2);
+}
+.dk-tb-delta {
+  color: var(--red);
+  font-weight: 700;
+}
+.dk-tb-sheetno {
+  border-bottom: 0;
+  background: var(--ink);
+  color: var(--paper);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 11px 12px;
+  margin-top: 0;
+}
+.dk-tb-n {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 0.85;
+}
+.dk-tb-s {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-transform: uppercase;
+}
+@media (max-width: 760px) {
+  .dk-tb {
+    border-left: 0;
+    border-top: var(--med) solid var(--ink);
+  }
+  .dk-tb-revtbl {
+    margin-top: 0;
+  }
+}
