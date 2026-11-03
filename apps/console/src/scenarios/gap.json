@@ -1,0 +1,86 @@
+{
+  "id": "gap",
+  "tag": "Unanswerable",
+  "question": "What cab size and door type should we order for the service elevator?",
+  "notes": "No Division 14 in the corpus; expect a GapReport.",
+  "recordedAt": "2026-11-03T21:28:09.433Z",
+  "result": {
+    "rfi_id": "scenario-gap",
+    "reason": "The quoted text is designer-note coordination instruction, not a contract specification of cab size or door type, so the governing value is absent.",
+    "searched": [
+      "08 11 13",
+      "08 51 13",
+      "26 20 00",
+      "26 51 00"
+    ],
+    "closest_matches": [
+      {
+        "chunk_id": "UFGS-08-11-13:0007",
+        "section_code": "08 11 13",
+        "sheet": null,
+        "revision": "UFGS-2020-08",
+        "quote_span": ""
+      },
+      {
+        "chunk_id": "UFGS-26-20-00:0090",
+        "section_code": "26 20 00",
+        "sheet": null,
+        "revision": "UFGS-2025-05",
+        "quote_span": ""
+      },
+      {
+        "chunk_id": "UFGS-08-51-13:0041",
+        "section_code": "08 51 13",
+        "sheet": null,
+        "revision": "UFGS-2019-05",
+        "quote_span": ""
+      }
+    ],
+    "usage": {
+      "total_latency_ms": 7483,
+      "total_cost_usd": 0.015169,
+      "stages": [
+        {
+          "stage": "classify",
+          "latency_ms": 833,
+          "input_tokens": 263,
+          "output_tokens": 25,
+          "cost_usd": 0.000776,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "stage": "retrieve",
+          "latency_ms": 142,
+          "input_tokens": 13,
+          "output_tokens": 0,
+          "cost_usd": 0.000001,
+          "model": "voyage-3.5"
+        },
+        {
+          "stage": "cross_check",
+          "latency_ms": 5,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cost_usd": 0,
+          "model": null
+        },
+        {
+          "stage": "draft",
+          "latency_ms": 5299,
+          "input_tokens": 3178,
+          "output_tokens": 528,
+          "cost_usd": 0.011636,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "stage": "verify",
+          "latency_ms": 1204,
+          "input_tokens": 973,
+          "output_tokens": 81,
+          "cost_usd": 0.002756,
+          "model": "claude-sonnet-5"
+        }
+      ]
+    }
+  }
+}

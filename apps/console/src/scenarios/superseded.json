@@ -1,0 +1,79 @@
+{
+  "id": "superseded",
+  "tag": "Superseded rev",
+  "question": "How much ventilation do we need during interior painting, and how soon can crews reoccupy the painted rooms?",
+  "notes": "Retrieval hits the old 09 90 00 revision; expect non-empty superseded_notes demonstrating revision governance.",
+  "recordedAt": "2026-11-03T21:27:46.129Z",
+  "result": {
+    "rfi_id": "scenario-superseded",
+    "rfi_type": "clarification",
+    "answer": "For interior painting under Section 09 90 00, PART 1 > 1.10 \"ENVIRONMENTAL REQUIREMENTS\" states: Comply, at minimum, with manufacturer recommendations for space ventilation during and after installation. Isolate area of application from rest of building when applying high-emission paints or coatings.\n\n1.10.2 \"Post-Application\": Vacate space for as long as possible after application. Wait a minimum of 48 hours before occupying freshly painted rooms. Maintain one of the following ventilation conditions during the curing period, or for 72 hours after application:\na. Supply 100 percent outside air 24 hours a day.\nb. Supply airflow at a rate of 6 air changes per hour, when outside temperatures are between 55°F and 85°F and humidity is between 30 percent and 60 percent.\nc. Supply airflow at a rate of 1.5 air changes per hour, when outside air conditions are not within the range stipulated above.",
+    "citations": [
+      {
+        "chunk_id": "UFGS-09-90-00:0039",
+        "section_code": "09 90 00",
+        "sheet": null,
+        "revision": "UFGS-2026-08",
+        "quote_span": "Comply, at minimum, with manufacturer recommendations for space ventilation during and after installation.[  Isolate area of application from rest of building when applying high-emission paints or coatings.]"
+      },
+      {
+        "chunk_id": "UFGS-09-90-00:0041",
+        "section_code": "09 90 00",
+        "sheet": null,
+        "revision": "UFGS-2026-08",
+        "quote_span": "Vacate space for as long as possible after application.  Wait a minimum of 48 hours before occupying freshly painted rooms.  Maintain one of the following ventilation conditions during the curing period, or for 72 hours after application:\na.  Supply 100 percent outside air 24 hours a day.\nb.  Supply airflow at a rate of 6 air changes per hour, when outside temperatures are between 13 degrees C 55 degrees F and 29 degrees C 85 degrees F and humidity is between 30 percent and 60 percent.\nc.  Supply airflow at a rate of 1.5 air changes per hour, when outside air conditions are not within the range stipulated above."
+      }
+    ],
+    "superseded_notes": [
+      "09 90 00 PART 1 > 1.9 > 1.9.2 rev UFGS-2021-02 is superseded by rev UFGS-2026-08",
+      "09 90 00 PART 1 > 1.9 rev UFGS-2021-02 is superseded by rev UFGS-2026-08",
+      "09 90 00 PART 1 > 1.1 > 1.1.1 > 1.1.1.2 rev UFGS-2021-02 is superseded by rev UFGS-2026-08"
+    ],
+    "usage": {
+      "total_latency_ms": 25055,
+      "total_cost_usd": 0.035511,
+      "stages": [
+        {
+          "stage": "classify",
+          "latency_ms": 1557,
+          "input_tokens": 281,
+          "output_tokens": 33,
+          "cost_usd": 0.000892,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "stage": "retrieve",
+          "latency_ms": 138,
+          "input_tokens": 21,
+          "output_tokens": 0,
+          "cost_usd": 0.000001,
+          "model": "voyage-3.5"
+        },
+        {
+          "stage": "cross_check",
+          "latency_ms": 5,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cost_usd": 0,
+          "model": null
+        },
+        {
+          "stage": "draft",
+          "latency_ms": 9578,
+          "input_tokens": 2965,
+          "output_tokens": 1071,
+          "cost_usd": 0.01664,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "stage": "verify",
+          "latency_ms": 13777,
+          "input_tokens": 1374,
+          "output_tokens": 1523,
+          "cost_usd": 0.017978,
+          "model": "claude-sonnet-5"
+        }
+      ]
+    }
+  }
+}

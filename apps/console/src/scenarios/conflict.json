@@ -1,0 +1,89 @@
+{
+  "id": "conflict",
+  "tag": "Method dispute",
+  "question": "Our flooring installer and the manufacturer disagree on slab moisture testing - which test method governs before resilient flooring goes down?",
+  "notes": "Conflict-flavored question resolved by 09 65 00.",
+  "recordedAt": "2026-11-03T21:28:01.913Z",
+  "result": {
+    "rfi_id": "scenario-conflict",
+    "rfi_type": "conflict",
+    "answer": "Per Section 09 65 00, moisture testing of the concrete subfloor prior to installing resilient flooring is to be conducted in accordance with ASTM F1869 or ASTM F2170, unless the flooring manufacturer recommends otherwise — in which case the manufacturer's recommended method governs. Alkalinity (pH) testing is to be performed as recommended by the flooring manufacturer. Additionally, a bond test to confirm adhesive compatibility must be performed in accordance with the flooring manufacturer's printed installation instructions. Test reports for moisture, alkalinity, and bond testing must be submitted, stating the date of test, person conducting the test, and area tested. Therefore, the specified ASTM methods (F1869/F2170) govern unless the flooring manufacturer specifies a different method, in which case the manufacturer's recommendation takes precedence per the specification language.",
+    "citations": [
+      {
+        "chunk_id": "UFGS-09-65-00:0037",
+        "section_code": "09 65 00",
+        "sheet": null,
+        "revision": "UFGS-2024-11",
+        "quote_span": "Conduct moisture testing in accordance with ASTM F1869 or ASTM F2170, unless otherwise recommended by the flooring manufacturer."
+      },
+      {
+        "chunk_id": "UFGS-09-65-00:0037",
+        "section_code": "09 65 00",
+        "sheet": null,
+        "revision": "UFGS-2024-11",
+        "quote_span": "Conduct alkalinity testing as recommended by the flooring manufacturer."
+      },
+      {
+        "chunk_id": "UFGS-09-65-00:0037",
+        "section_code": "09 65 00",
+        "sheet": null,
+        "revision": "UFGS-2024-11",
+        "quote_span": "Determine the compatibility of the resilient flooring adhesives to the concrete floors by a bond test in accordance with the flooring manufacturer's printed installation instructions."
+      },
+      {
+        "chunk_id": "UFGS-09-65-00:0037",
+        "section_code": "09 65 00",
+        "sheet": null,
+        "revision": "UFGS-2024-11",
+        "quote_span": "Submit copy of test reports for moisture and alkalinity content of concrete slab, and bond test stating date of test, person conducting the test, and the area tested."
+      }
+    ],
+    "superseded_notes": [],
+    "usage": {
+      "total_latency_ms": 15756,
+      "total_cost_usd": 0.025335,
+      "stages": [
+        {
+          "stage": "classify",
+          "latency_ms": 1254,
+          "input_tokens": 289,
+          "output_tokens": 28,
+          "cost_usd": 0.000858,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "stage": "retrieve",
+          "latency_ms": 148,
+          "input_tokens": 22,
+          "output_tokens": 0,
+          "cost_usd": 0.000001,
+          "model": "voyage-3.5"
+        },
+        {
+          "stage": "cross_check",
+          "latency_ms": 5,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cost_usd": 0,
+          "model": null
+        },
+        {
+          "stage": "draft",
+          "latency_ms": 6276,
+          "input_tokens": 4297,
+          "output_tokens": 618,
+          "cost_usd": 0.014774,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "stage": "verify",
+          "latency_ms": 8073,
+          "input_tokens": 1166,
+          "output_tokens": 737,
+          "cost_usd": 0.009702,
+          "model": "claude-sonnet-5"
+        }
+      ]
+    }
+  }
+}
