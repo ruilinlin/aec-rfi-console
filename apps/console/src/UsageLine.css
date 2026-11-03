@@ -1,0 +1,10 @@
+.rc-usage {
+  margin-top: 14px;
+  font-family: var(--cad);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 10px;
+  color: var(--ink2);
+  border-top: var(--hr) solid var(--hair);
+  padding-top: 7px;
+}

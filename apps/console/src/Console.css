@@ -1,0 +1,87 @@
+.co-title {
+  font-family: var(--cad);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: clamp(24px, 4.2vw, 36px);
+  letter-spacing: 0.015em;
+  margin: 0;
+  line-height: 0.95;
+  border-bottom: var(--hvy) solid var(--ink);
+  padding-bottom: 7px;
+}
+.co-sub {
+  font-family: var(--cad);
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  color: var(--ink2);
+  font-size: 12.5px;
+  margin: 8px 0 10px;
+  font-weight: 500;
+}
+.co-sec {
+  margin-top: 22px;
+  border-top: var(--med) solid var(--ink);
+  padding-top: 7px;
+}
+.co-sec-hd {
+  font-family: var(--cad);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink2);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.co-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.co-chip {
+  font-family: var(--cad);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 12px;
+  border: var(--med) solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  padding: 6px 11px 5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: transform 0.1s, background 0.12s;
+}
+.co-chip:hover {
+  background: var(--ink);
+  color: var(--paper);
+  transform: translateY(-1px);
+}
+.co-chip-tag {
+  color: var(--ink2);
+  font-weight: 500;
+  font-size: 10.5px;
+}
+.co-chip:hover .co-chip-tag {
+  color: var(--paper);
+}
+.co-question {
+  margin-top: 12px;
+  border: var(--med) solid var(--ink);
+  background: var(--paper);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 10px 11px;
+  line-height: 1.45;
+  min-height: 40px;
+  text-transform: uppercase;
+}
+@media (prefers-reduced-motion: reduce) {
+  .co-chip {
+    transition: none;
+  }
+}

@@ -1,0 +1,71 @@
+.ps-steps {
+  display: grid;
+  gap: 7px;
+}
+.ps-step {
+  display: grid;
+  grid-template-columns: 18px 132px 1fr;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  opacity: 0.28;
+  transition: opacity 0.25s;
+}
+.ps-step--done,
+.ps-step--run {
+  opacity: 1;
+}
+.ps-box {
+  width: 15px;
+  height: 15px;
+  border: var(--med) solid var(--ink);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  line-height: 1;
+}
+.ps-step--done .ps-box {
+  background: var(--ink);
+  color: var(--paper);
+  animation: ps-pop 0.3s;
+}
+@keyframes ps-pop {
+  0% {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.ps-name {
+  font-family: var(--cad);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12.5px;
+}
+.ps-step--run .ps-name::after {
+  content: "█";
+  margin-left: 6px;
+  animation: ps-blink 1s steps(2) infinite;
+}
+@keyframes ps-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+.ps-ms {
+  color: var(--ink2);
+  font-size: 11px;
+  text-align: right;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ps-step,
+  .ps-step--done .ps-box {
+    transition: none;
+    animation: none;
+  }
+}

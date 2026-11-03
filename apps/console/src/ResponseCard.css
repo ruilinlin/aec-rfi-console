@@ -1,0 +1,90 @@
+.rc-card {
+  border: var(--med) solid var(--ink);
+  background: var(--paper);
+  animation: rc-cardin 0.3s ease-out;
+}
+@keyframes rc-cardin {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+}
+.rc-card--gap {
+  border-color: var(--red);
+}
+.rc-cap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--cad);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  padding: 6px 11px;
+  border-bottom: var(--hr) solid var(--hair);
+  color: var(--ink2);
+}
+.rc-prov {
+  border: var(--hr) solid currentColor;
+  padding: 1px 7px;
+}
+.rc-prov--live {
+  color: var(--green);
+}
+.rc-body {
+  padding: 15px 13px 16px;
+}
+.rc-body > * + * {
+  margin-top: 12px;
+}
+.rc-answer {
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 12px 0 0;
+  white-space: pre-wrap;
+}
+.rc-cites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-start;
+}
+.rc-searched {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+}
+.rc-searched-lbl {
+  font-family: var(--cad);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 10px;
+  color: var(--ink2);
+}
+.rc-searched-code {
+  font-family: var(--cad);
+  font-weight: 600;
+  font-size: 11px;
+  border: var(--hr) solid var(--ink2);
+  padding: 2px 7px;
+}
+.rc-closest summary {
+  font-family: var(--cad);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 10.5px;
+  color: var(--ink2);
+  cursor: pointer;
+}
+.rc-closest ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 11.5px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rc-card {
+    animation: none;
+  }
+}

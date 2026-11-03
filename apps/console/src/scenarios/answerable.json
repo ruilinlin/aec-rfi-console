@@ -1,0 +1,68 @@
+{
+  "id": "answerable",
+  "tag": "Answerable",
+  "question": "How far apart can fasteners be placed when securing the perimeter wall molding for a suspended acoustical ceiling?",
+  "notes": "Clean answerable question; expect a CitedResponse citing 09 51 00.",
+  "recordedAt": "2026-11-03T21:27:21.043Z",
+  "result": {
+    "rfi_id": "scenario-answerable",
+    "rfi_type": "clarification",
+    "answer": "Per the acoustical ceilings specification, wall molding must be secured not more than 76 mm (3 inches) from the ends of each length, and the end fastenings must not be spaced more than 406 mm (16 inches) on centers between them.",
+    "citations": [
+      {
+        "chunk_id": "UFGS-09-51-00:0099",
+        "section_code": "09 51 00",
+        "sheet": null,
+        "revision": "UFGS-2020-08",
+        "quote_span": "Secure wall molding not more than 76 mm 3 inch from ends of each length and not more than 406 mm 16 inch on centers between end fastenings."
+      }
+    ],
+    "superseded_notes": [],
+    "usage": {
+      "total_latency_ms": 4962,
+      "total_cost_usd": 0.014499,
+      "stages": [
+        {
+          "stage": "classify",
+          "latency_ms": 979,
+          "input_tokens": 285,
+          "output_tokens": 28,
+          "cost_usd": 0.00085,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "stage": "retrieve",
+          "latency_ms": 298,
+          "input_tokens": 21,
+          "output_tokens": 0,
+          "cost_usd": 0.000001,
+          "model": "voyage-3.5"
+        },
+        {
+          "stage": "cross_check",
+          "latency_ms": 8,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cost_usd": 0,
+          "model": null
+        },
+        {
+          "stage": "draft",
+          "latency_ms": 1866,
+          "input_tokens": 4513,
+          "output_tokens": 173,
+          "cost_usd": 0.010756,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "stage": "verify",
+          "latency_ms": 1811,
+          "input_tokens": 641,
+          "output_tokens": 161,
+          "cost_usd": 0.002892,
+          "model": "claude-sonnet-5"
+        }
+      ]
+    }
+  }
+}
