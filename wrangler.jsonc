@@ -1,0 +1,13 @@
+// Cloudflare Workers static-assets deployment for the console app.
+// The Workers build runs from the REPO ROOT (root directory "/"):
+//   build:  pnpm --filter console build   -> apps/console/dist
+//   deploy: npx wrangler deploy           -> serves dist as static assets
+{
+  "name": "aec-rfi-console",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./apps/console/dist",
+    // Hash-based routing only, but serve index.html for any stray path.
+    "not_found_handling": "single-page-application"
+  }
+}
