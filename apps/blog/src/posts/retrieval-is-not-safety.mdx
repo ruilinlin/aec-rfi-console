@@ -48,15 +48,20 @@ excluded, and clean configs were never re-run.
 <ResultsTable
   caption="RFI-Bench test split - 40 frozen items, single run. cit-P/R = citation precision/recall; abstain-unans = abstains on unanswerable items; stale = answers citing a superseded revision."
   rows={[
-    { config: "b0 LLM-only", recall: "0%", citP: "0%", citR: "0%", abstain: "0%", stale: "—" },
-    { config: "b1 naive RAG", recall: "53%", citP: "31%", citR: "39%", abstain: "0%", stale: "0%" },
-    { config: "b2 hybrid RAG", recall: "100%", citP: "87%", citR: "100%", abstain: "0%", stale: "62%" },
-    { config: "ours", recall: "100%", citP: "86%", citR: "100%", abstain: "88%", stale: "0%", ours: true },
-    { config: "− cross_check", recall: "100%", citP: "80%", citR: "100%", abstain: "88%", stale: "86%" },
-    { config: "− verify", recall: "97%", citP: "77%", citR: "97%", abstain: "0%", stale: "0%" },
-    { config: "− section chunking", recall: "59%", citP: "39%", citR: "52%", abstain: "100%", stale: "0%" },
+    { config: "b0 LLM-only", recall: "0%", citP: "0%", citR: "0%", abstain: "0/8", falseAbstain: "0/31", stale: "0/8" },
+    { config: "b1 naive RAG", recall: "53%", citP: "31%", citR: "39%", abstain: "0/8", falseAbstain: "0/32", stale: "0/8" },
+    { config: "b2 hybrid RAG", recall: "100%", citP: "87%", citR: "100%", abstain: "0/8", falseAbstain: "0/32", stale: "5/8 (62%)" },
+    { config: "ours", recall: "100%", citP: "86%", citR: "100%", abstain: "7/8 (88%)", falseAbstain: "1/32 (3%)", stale: "0/8", ours: true },
+    { config: "− cross_check", recall: "100%", citP: "80%", citR: "100%", abstain: "7/8 (88%)", falseAbstain: "0/31", stale: "6/7 (86%)" },
+    { config: "− verify", recall: "97%", citP: "77%", citR: "97%", abstain: "0/8", falseAbstain: "0/32", stale: "0/8" },
+    { config: "− section chunking", recall: "59%", citP: "39%", citR: "52%", abstain: "8/8 (100%)", falseAbstain: "3/32 (9%)", stale: "0/8" },
   ]}
 />
+
+*Denominators: abstain-unans over 8 unanswerable items; false-abstain over the 31-32
+answerable items each config saw; stale over the 8 revision-pair items (7 for − cross_check,
+whose one errored item was a revision-pair question). Full per-metric definitions live in
+[the whitepaper](/whitepaper/).*
 
 The row to stare at is **b2**. Hybrid retrieval alone achieves *perfect* recall — every gold
 chunk reaches the model — and respectable citation quality. And yet it cites a superseded

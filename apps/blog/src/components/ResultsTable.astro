@@ -6,6 +6,7 @@ interface Row {
   citP: string;
   citR: string;
   abstain: string;
+  falseAbstain?: string;
   stale: string;
   ours?: boolean;
 }
@@ -26,6 +27,7 @@ const { rows, caption } = Astro.props;
           <th>cit-P</th>
           <th>cit-R</th>
           <th>abstain-unans</th>
+          <th>false-abstain</th>
           <th>stale rate</th>
         </tr>
       </thead>
@@ -38,6 +40,7 @@ const { rows, caption } = Astro.props;
               <td>{row.citP}</td>
               <td>{row.citR}</td>
               <td>{row.abstain}</td>
+              <td>{row.falseAbstain ?? "—"}</td>
               <td>{row.stale}</td>
             </tr>
           ))
@@ -60,7 +63,7 @@ const { rows, caption } = Astro.props;
     font-family: var(--mono);
     font-size: 13.5px;
     line-height: 1.45;
-    min-width: 560px;
+    min-width: 640px;
   }
   th,
   td {

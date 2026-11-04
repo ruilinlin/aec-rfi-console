@@ -167,8 +167,10 @@ false-abstain class fixed by one line.
 
 ### 6.1 Construction of the benchmark
 
-RFI-Bench is 40 test items across four types: clarification, conflict, substitution, and
-unanswerable traps whose near-miss sections a hurried reader would answer from. Questions were
+RFI-Bench is 40 test items across five types: 14 clarification, 6 conflict, 4 substitution,
+8 unanswerable traps whose near-miss sections a hurried reader would answer from, and 8
+superseded_ref items built on revision pairs - the items that make the stale-citation metric
+of section 7 measurable at all. Questions were
 drafted with LLM assistance and verified item by item against the database; dev and test share
 no clauses. Writing gold citations meant checking every clause path against the corpus - which
 is exactly how the bracket bug of 3.3 surfaced.
@@ -182,7 +184,9 @@ is exactly how the bracket bug of 3.3 surfaced.
 
 The test split was frozen before any test run, used exactly once (the run in section 7), and
 never for tuning - all tuning happened on a separate 12-item dev split. During the run, 2 of
-280 config-item pairs errored (truncation-class); they were recorded and excluded. When credits
+280 config-item pairs errored (truncation-class; one b0 item and one superseded_ref item under
+− cross_check - which is why that configuration's stale denominator below is 7, not 8); they
+were recorded and excluded. When credits
 ran out mid-run at 5.3 of 7 configs, only the failed configs were re-run - clean configs were
 never re-rolled, because re-rolling until numbers improve is cherry-picking with extra steps.
 
@@ -193,39 +197,68 @@ never re-rolled, because re-rolling until numbers improve is cherry-picking with
 <ResultsTable
   caption="RFI-Bench test split - 40 frozen items, single run. cit-P/R = citation precision/recall; abstain-unans = abstains on unanswerable items; stale = answers citing a superseded revision."
   rows={[
-    { config: "b0 LLM-only", recall: "0%", citP: "0%", citR: "0%", abstain: "0%", stale: "—" },
-    { config: "b1 naive RAG", recall: "53%", citP: "31%", citR: "39%", abstain: "0%", stale: "0%" },
-    { config: "b2 hybrid RAG", recall: "100%", citP: "87%", citR: "100%", abstain: "0%", stale: "62%" },
-    { config: "ours", recall: "100%", citP: "86%", citR: "100%", abstain: "88%", stale: "0%", ours: true },
-    { config: "− cross_check", recall: "100%", citP: "80%", citR: "100%", abstain: "88%", stale: "86%" },
-    { config: "− verify", recall: "97%", citP: "77%", citR: "97%", abstain: "0%", stale: "0%" },
-    { config: "− section chunking", recall: "59%", citP: "39%", citR: "52%", abstain: "100%", stale: "0%" },
+    { config: "b0 LLM-only", recall: "0%", citP: "0%", citR: "0%", abstain: "0/8", falseAbstain: "0/31", stale: "0/8" },
+    { config: "b1 naive RAG", recall: "53%", citP: "31%", citR: "39%", abstain: "0/8", falseAbstain: "0/32", stale: "0/8" },
+    { config: "b2 hybrid RAG", recall: "100%", citP: "87%", citR: "100%", abstain: "0/8", falseAbstain: "0/32", stale: "5/8 (62%)" },
+    { config: "ours", recall: "100%", citP: "86%", citR: "100%", abstain: "7/8 (88%)", falseAbstain: "1/32 (3%)", stale: "0/8", ours: true },
+    { config: "− cross_check", recall: "100%", citP: "80%", citR: "100%", abstain: "7/8 (88%)", falseAbstain: "0/31", stale: "6/7 (86%)" },
+    { config: "− verify", recall: "97%", citP: "77%", citR: "97%", abstain: "0/8", falseAbstain: "0/32", stale: "0/8" },
+    { config: "− section chunking", recall: "59%", citP: "39%", citR: "52%", abstain: "8/8 (100%)", falseAbstain: "3/32 (9%)", stale: "0/8" },
   ]}
 />
 
+Denominators, since 40 single-run items earn no implied precision: abstain-unans is over the 8
+unanswerable items; false-abstain over the 31-32 answerable items each config saw (one b0 item
+errored); stale over the 8 superseded_ref revision-pair items (7 for − cross_check, whose one
+errored item was a superseded_ref). Retrieval and citation percentages are means over the
+items each config actually answered.
+
 The row that carries the thesis is **b2**: hybrid retrieval alone reaches perfect recall, yet
-cites a superseded revision on 62% of items where an older revision exists and answers every
-unanswerable trap. Retrieval found the right text; nothing told the system which text was
-allowed to govern, or that declining was an option. (The argument is developed at essay length
-in [Retrieval Is Not Safety](/posts/retrieval-is-not-safety/).)
+cites the superseded revision on 5 of the 8 revision-pair items and answers all 8 unanswerable
+traps. Retrieval found the right text; nothing told the system which text was allowed to
+govern, or that declining was an option. (The argument is developed at essay length in
+[Retrieval Is Not Safety](/posts/retrieval-is-not-safety/).)
+
+One subtlety the zeros hide: b1's stale 0/8 is not safety - it is incompetence acting as a
+shield. On the 8 revision-pair items b1's recall@10 was 0% on five of them; you can only cite
+the stale revision if you retrieve it. b2's hybrid retrieval surfaces both revisions reliably
+(recall 100% on all 8), which is precisely what turns staleness into a live hazard.
 
 ### 7.2 Reading the ablations
 
 Each ablation removes one layer from the full system:
 
-- **− cross_check**: stale rate 0% → 86%. Deterministic revision governance is worth 86 points
-  and costs ~8ms.
-- **− verify**: abstention 88% → 0%. The verify node *is* the abstention mechanism.
-- **− section chunking**: recall −41 points, citation precision −47. Structure-aware chunks are
-  load-bearing for everything above them.
+- **− cross_check**: stale 0/8 → 6/7. Deterministic revision governance is the entire
+  difference, and it costs ~8ms. (6/7 versus b2's 5/8 is a one-item difference on single-digit
+  denominators - the reading is "most revision-pair items go stale without governance," not
+  "removing a layer is worse than the baseline.")
+- **− verify**: abstention on unanswerables 7/8 → 0/8. The verify node *is* the abstention
+  mechanism.
+- **− section chunking**: recall −41 points, citation precision −47. Its 8/8 abstention on
+  unanswerables is not a point in its favor: it also false-abstains on 3 of 32 answerable
+  items, and its percentages are means over the 29 items it still answered. Weak retrieval
+  makes everything look uncertain - abstention numbers are only meaningful next to the
+  false-abstain column.
+- **ours vs b2 on citation precision** (86% vs 87%): a sub-one-point gap over different
+  answered sets (31 vs 32 items) - single-run noise, not a verify regression; against − verify
+  (77%) the verify node clearly raises precision.
 
 The floor, b0, is worth exhibiting: asked for a paint color with no color schedule in the
 corpus, it invented "Sherwin-Williams SW 7036 'Accessible Beige'" - specific, plausible,
-fabricated. Here is what the full system does with an unanswerable question instead:
+fabricated. Here is what the full system does with an unanswerable question instead - a
+live demo question recorded against the running agent (not a benchmark item; the frozen test
+set was used exactly once, in the table above):
 
 <PipelineReplay client:visible scenario={gap} />
 
 ### 7.3 Caveats
+
+The table has no direct answer-correctness metric: citation precision/recall and the
+verbatim-quote gate are proxies, and a citation can be right while the prose drawn from it is
+wrong. The saved run records store citations but not answer text, so rubric-scored correctness
+(LLM-judged with human spot checks) requires a fresh judged run - planned together with the
+batch-API eval infrastructure, and the main reason these numbers read as "evidence discipline"
+rather than "accuracy."
 
 Single run, 40 items, one corpus domain: the numbers carry variance (claude-sonnet-5 accepts no
 temperature parameter, and one borderline substitution item flipped between answered and
@@ -286,9 +319,11 @@ said.
 
 ### 9.3 Limits and next steps
 
-Known limits: one corpus domain, 40 test items, single-run numbers, and NOTE-block designer
-instructions that can still masquerade as evidence (structural segregation at ingest is
-tracked). Next: server-sent per-stage traces streamed live into the console, batch-API
+Known limits: one corpus domain, 40 test items, single-run numbers, no direct
+answer-correctness metric yet (7.3), and NOTE blocks - editor-facing instructions inside UFGS
+text - are currently kept out of answers by prompt rules only: they are not yet filtered or
+segregated at ingest (tracked as a structural fix), so they remain in the retrieval pool and
+the gap replay in 7.2 shows one being correctly rejected as non-evidence. Next: server-sent per-stage traces streamed live into the console, batch-API
 evaluation to cut eval cost, and growing the corpus by exactly what the gap loop nominates.
 
 ---
