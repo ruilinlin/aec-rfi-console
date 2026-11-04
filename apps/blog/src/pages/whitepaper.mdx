@@ -1,0 +1,300 @@
+---
+layout: ../layouts/WhitepaperLayout.astro
+title: "aec-rfi-agent: The Build, Section by Section"
+description: "A technical report on building a revision-aware RAG agent for construction RFIs: corpus, chunking, hybrid retrieval, the agent graph, a frozen benchmark, and what each layer measured out to be worth."
+date: "2026-11-04"
+words: 5200
+---
+
+import Finding from "../components/Finding.astro";
+import { PipelineReplay } from "../components/PipelineReplay";
+import ResultsTable from "../components/ResultsTable.astro";
+import answerable from "../data/answerable.json";
+import gap from "../data/gap.json";
+
+## 1. Problem & Approach
+
+### 1.1 What an RFI is, and what a wrong answer costs
+
+A Request for Information is the formal channel a contractor uses to ask the design team to
+resolve an ambiguity in the contract documents: a fastener spacing, a conflicting pair of
+clauses, a product substitution. The response becomes part of the contract record and gets
+built into the building — so a wrong answer is rework, a claim, or a safety defect. Three
+properties follow for any system that drafts RFI responses: every claim must be **cited** to
+the governing document, the citation must come from the **current revision**, and when the
+documents are silent the only correct output is a structured **"the spec is silent."**
+
+### 1.2 The design principle
+
+The agent is built around one asymmetry: in construction, a deferral costs a day; a wrong
+answer costs a rework order. Every layer therefore errs toward abstention. The system never
+issues final answers — it drafts responses for a licensed professional to review, and when it
+cannot support an answer it returns a `GapReport` naming what was searched and why nothing
+governs.
+
+### 1.3 System overview
+
+The stack: Python 3.11, LangGraph for the agent graph, PostgreSQL 16 with pgvector, voyage-3.5
+embeddings (1024-dim), claude-sonnet-5 for drafting, FastAPI in front. The pipeline is five
+stages — classify → retrieve → cross_check → draft → verify — detailed in section 5. The
+corpus is 12 UFGS specification sections (1,524 chunks after the fix in 3.3). Everything
+downstream of retrieval exists to turn "found the right text" into "safe to hand to a human."
+
+## 2. Corpus & Provenance
+
+### 2.1 Finding the clean API behind the SPA
+
+UFGS specifications are published on WBDG. The site is a JavaScript SPA, but watching its
+network traffic exposed a clean JSON API (`GET /api/documents/{slug}`) with document metadata
+and file URLs — no scraping, no HTML parsing. Twelve sections were pinned covering concrete,
+roofing, sealants, ceilings, paint, doors, and electrical work, chosen so the benchmark could
+ask cross-section questions.
+
+### 2.2 A manifest, not a folder of PDFs
+
+Every corpus file is pinned in a manifest with its source URL and sha256. The downloader is
+idempotent: temp-file-then-rename, skip when the hash matches. This sounds like ceremony for
+12 files, but the hash shows up twice more in the build: the eval report records the corpus
+manifest hash it ran against, and the gap-loop closure notes (section 8) stamp which corpus
+state resolved a previously unanswerable question. Provenance is cheap when you add it first.
+
+### 2.3 Schema drift, observed in the wild
+
+The downloader was written against one sample document and selected PDFs by `mimeType`. In
+production, WBDG returns `mimeType` (and `fileSize`) as `null` for 11 of 12 documents — the
+development sample happened to be the only recently-updated one with populated fields.
+
+<Finding label="Lesson 2.3" title="A populated field is not a schema guarantee">
+  Select on the property you actually need (the <code>.pdf</code> extension on
+  <code>fileName</code>) and treat every nullable-in-the-wild field as nullable in code.
+</Finding>
+
+## 3. Ingest & Section-Aware Chunking
+
+### 3.1 Chunking on the document's own structure
+
+UFGS sections have rigid internal structure: PART headings and dotted clause numbers
+(1.5, 3.1.5.2). The chunker splits on those boundaries, so a chunk *is* a clause — which is
+what makes a citation like "09 51 00 / 3.1.5" possible. The ablation in section 7 puts a
+number on this choice: replacing it with fixed 1,500-character windows costs 41 points of
+retrieval recall and 47 points of citation precision.
+
+### 3.2 The documents carry their own revision graph
+
+Each UFGS first page states its revision and the exact revision it supersedes ("UFGS-09 90 00
+(August 2026), Superseding ... (February 2021)"). Ingest parses that banner into per-document
+metadata and links a supersedes chain automatically — no hand-maintained revision table. The
+archive bucket (UFGS_ARCHIVES) supplies each section's most recently superseded revision, which
+is what makes the stale-citation metric in section 7 measurable at all.
+
+### 3.3 The bracket that ate the clause numbers
+
+UFGS wraps optional clauses in square brackets, so a heading line can begin with `[3.1.5.2`
+or `]1.5`. The heading detector did not match bracket-prefixed lines, and those clauses
+silently merged into the previous chunk — a sealant temperature limit was citable only as part
+of a "green certifications" clause. The bug surfaced during benchmark construction (section 6),
+and the fix was one `lstrip("[]")` before heading detection; the corpus grew from 1,232 to
+1,524 chunks. Critically, the fix landed **before** the test set was frozen — frozen gold
+labels would have baked the wrong clause numbers in as "correct."
+
+## 4. Hybrid Retrieval
+
+### 4.1 Two signals, fused by rank
+
+Retrieval runs dense (pgvector cosine over voyage-3.5 embeddings) and keyword (PostgreSQL
+tsvector) search in parallel and fuses them with Reciprocal Rank Fusion (K=60). Cosine
+distances and `ts_rank` scores are incomparable numbers, but ranks always compare — RRF needs
+no score calibration, and chunks confirmed by both signals rise.
+
+### 4.2 Section codes are metadata, not text
+
+"09 29 00 fastener spacing" returns zero keyword hits even though the corpus contains section
+09 29 00: `plainto_tsquery` ANDs all terms, and a chunk's prose does not contain its own
+section number — the code lives in a column. The common claim "BM25 handles exact identifiers"
+quietly assumes the identifier appears in the indexed text.
+
+<Finding label="Lesson 4.2" title="Identifiers route, they don't rank">
+  The classify stage extracts section codes and applies them as SQL metadata filters. RRF
+  degrades gracefully when the keyword ranking comes back empty.
+</Finding>
+
+## 5. The Agent Graph
+
+Five nodes, each with one job. Here is a real recorded run, replayed on its actual per-stage
+latencies:
+
+<PipelineReplay client:visible scenario={answerable} />
+
+### 5.1 classify
+
+Types the RFI (clarification / conflict / substitution) and extracts section-code hints that
+become the retrieval filters of 4.2. Cheap, fast, and the only place free-text turns into
+structured routing.
+
+### 5.2 retrieve
+
+The hybrid search of section 4, with the classify node's filters applied.
+
+### 5.3 cross_check
+
+A deterministic walk of the supersedes graph from 3.2: any candidate chunk whose document is
+superseded by another document in the corpus is flagged before drafting. No LLM call — it is
+a graph lookup that runs in ~8 milliseconds, and section 7 shows it is worth 86 points of
+stale-citation rate.
+
+### 5.4 draft
+
+Drafts the answer under a hard rule: it may only cite chunk ids that retrieval actually
+provided. Any citation outside that whitelist is dropped, and zero valid citations raises
+instead of returning an uncited answer — observed catching the model citing plausible-looking
+ids that were never provided.
+
+### 5.5 verify
+
+Two gates. First, every quoted span must match its source chunk **verbatim** — after
+whitespace normalization on both sides, because PDF extraction wraps lines mid-sentence and
+raw substring checks fail on honest quotes. Second, an LLM review of every claim against its
+citation. One plumbing lesson: the verifier needs the same context the drafter had — until
+each citation's clause heading was included, the reviewer judged real quotes unresolvable, a
+false-abstain class fixed by one line.
+
+<Finding label="Lesson 5.5" title="Verifiers need the drafter's context">
+  A verification stage reviewing less context than the stage it audits manufactures false
+  negatives. Pass the same section paths, not just the quotes.
+</Finding>
+
+## 6. RFI-Bench & the Freeze Discipline
+
+### 6.1 Construction of the benchmark
+
+RFI-Bench is 40 test items across four types: clarification, conflict, substitution, and
+unanswerable traps whose near-miss sections a hurried reader would answer from. Questions were
+drafted with LLM assistance and verified item by item against the database; dev and test share
+no clauses. Writing gold citations meant checking every clause path against the corpus - which
+is exactly how the bracket bug of 3.3 surfaced.
+
+<Finding label="Lesson 6.1" title="Benchmark construction is a bug detector">
+  Hand-verifying gold labels against the live database is the cheapest systematic audit of the
+  ingest pipeline you will ever run. Fix what it finds before freezing.
+</Finding>
+
+### 6.2 The discipline
+
+The test split was frozen before any test run, used exactly once (the run in section 7), and
+never for tuning - all tuning happened on a separate 12-item dev split. During the run, 2 of
+280 config-item pairs errored (truncation-class); they were recorded and excluded. When credits
+ran out mid-run at 5.3 of 7 configs, only the failed configs were re-run - clean configs were
+never re-rolled, because re-rolling until numbers improve is cherry-picking with extra steps.
+
+## 7. Results & Ablations
+
+### 7.1 The headline table
+
+<ResultsTable
+  caption="RFI-Bench test split - 40 frozen items, single run. cit-P/R = citation precision/recall; abstain-unans = abstains on unanswerable items; stale = answers citing a superseded revision."
+  rows={[
+    { config: "b0 LLM-only", recall: "0%", citP: "0%", citR: "0%", abstain: "0%", stale: "—" },
+    { config: "b1 naive RAG", recall: "53%", citP: "31%", citR: "39%", abstain: "0%", stale: "0%" },
+    { config: "b2 hybrid RAG", recall: "100%", citP: "87%", citR: "100%", abstain: "0%", stale: "62%" },
+    { config: "ours", recall: "100%", citP: "86%", citR: "100%", abstain: "88%", stale: "0%", ours: true },
+    { config: "− cross_check", recall: "100%", citP: "80%", citR: "100%", abstain: "88%", stale: "86%" },
+    { config: "− verify", recall: "97%", citP: "77%", citR: "97%", abstain: "0%", stale: "0%" },
+    { config: "− section chunking", recall: "59%", citP: "39%", citR: "52%", abstain: "100%", stale: "0%" },
+  ]}
+/>
+
+The row that carries the thesis is **b2**: hybrid retrieval alone reaches perfect recall, yet
+cites a superseded revision on 62% of items where an older revision exists and answers every
+unanswerable trap. Retrieval found the right text; nothing told the system which text was
+allowed to govern, or that declining was an option. (The argument is developed at essay length
+in [Retrieval Is Not Safety](/posts/retrieval-is-not-safety/).)
+
+### 7.2 Reading the ablations
+
+Each ablation removes one layer from the full system:
+
+- **− cross_check**: stale rate 0% → 86%. Deterministic revision governance is worth 86 points
+  and costs ~8ms.
+- **− verify**: abstention 88% → 0%. The verify node *is* the abstention mechanism.
+- **− section chunking**: recall −41 points, citation precision −47. Structure-aware chunks are
+  load-bearing for everything above them.
+
+The floor, b0, is worth exhibiting: asked for a paint color with no color schedule in the
+corpus, it invented "Sherwin-Williams SW 7036 'Accessible Beige'" - specific, plausible,
+fabricated. Here is what the full system does with an unanswerable question instead:
+
+<PipelineReplay client:visible scenario={gap} />
+
+### 7.3 Caveats
+
+Single run, 40 items, one corpus domain: the numbers carry variance (claude-sonnet-5 accepts no
+temperature parameter, and one borderline substitution item flipped between answered and
+abstained across dev runs). The conservative frontier costs real coverage - one false
+abstention on the dev set traced to a typo in the source table itself. Both facts are reported
+rather than smoothed.
+
+## 8. Hardening, Observability, and the Gap Loop
+
+Three production-shaped branches, each borrowed from patterns in an ops console codebase and
+adapted ([field notes](/posts/five-bugs-field-notes/) covers the bugs they surfaced).
+
+### 8.1 API hardening
+
+A 64KB body cap, a per-IP sliding-window rate limit with an injectable clock (tests advance
+time instead of sleeping), and fail-closed CORS: no cross-origin access unless an allowlist is
+set. Writing the review-suggested limit=0 test exposed a real crash (empty-deque indexing) -
+the test suite earned its keep before the feature shipped.
+
+### 8.2 Per-stage observability
+
+A context-variable trace records latency, tokens, and cost per pipeline stage, persisted with
+each request and returned in each response. One real request measures $0.0224 and 21.2s -
+verify accounts for 12.2s of it, while the deterministic cross_check adds 8ms. Governance is
+nearly free; verification is the cost, and section 7 shows what it buys.
+
+### 8.3 The gap loop
+
+GapReports persist with the query embedding already computed during retrieval. A clustering
+pass groups open gaps by cosine similarity (threshold documented from measured voyage-3.5
+behavior: ≥0.8 near-duplicates, ~0.5 same topic) so recurring unanswerable topics nominate the
+next corpus additions. After ingest, a replay pass re-runs open gaps and closes the ones that
+now answer - each closure stamped with its citation and the corpus manifest hash from 2.2.
+Abstention stops being a dead end and starts driving corpus growth.
+
+<Finding label="Lesson 8.3" title="stdout is not a commit">
+  The replay script printed CLOSED per row while every UPDATE sat in one uncommitted
+  transaction; a mid-run failure rolled back state the log had already announced. Per-row
+  progress requires per-row commits.
+</Finding>
+
+## 9. Frontend & Deployment
+
+### 9.1 Replay-first console
+
+The [console](https://aec-rfi.ruilinsun.com) ships recorded real responses as its default
+experience: preset scenarios replay actual API outputs on their recorded stage timings, and
+live mode unlocks only behind a /health probe. Offline, everything still works - the honest
+degradation for a backend that is not always deployed. Types come from the backend's exported
+OpenAPI snapshot; CI regenerates and fails on drift, so the contract cannot silently rot.
+
+### 9.2 Two Workers, one monorepo
+
+Console and blog deploy as separate Cloudflare Workers from one repository, each with its own
+wrangler config and build command. The embedded replays in this report are the console's
+recorded scenario files, imported verbatim - one source of truth for what the agent actually
+said.
+
+### 9.3 Limits and next steps
+
+Known limits: one corpus domain, 40 test items, single-run numbers, and NOTE-block designer
+instructions that can still masquerade as evidence (structural segregation at ingest is
+tracked). Next: server-sent per-stage traces streamed live into the console, batch-API
+evaluation to cut eval cost, and growing the corpus by exactly what the gap loop nominates.
+
+---
+
+*Drafted answers are for licensed-professional review, never final. Code:
+[aec-rfi-agent](https://github.com/ruilinlin/aec-rfi-agent) · console:
+[aec-rfi.ruilinsun.com](https://aec-rfi.ruilinsun.com) · companion essays:
+[Retrieval Is Not Safety](/posts/retrieval-is-not-safety/),
+[Field Notes: Five Bugs](/posts/five-bugs-field-notes/).*

@@ -18,6 +18,17 @@ const posts = (await getCollection("posts", ({ data }) => !data.draft)).sort(
       instead of guessing. Articles embed live replays of the real pipeline; try the
       <a href="https://aec-rfi.ruilinsun.com">interactive console</a> for the full thing.
     </p>
+    <a class="home-wp" href="/whitepaper/">
+      <div class="home-wp-tag">Technical report</div>
+      <div class="home-wp-title">The Build, Section by Section</div>
+      <p class="home-wp-desc">
+        Nine numbered sections from corpus to deployment: provenance, section-aware chunking,
+        hybrid retrieval, the agent graph, the frozen benchmark, and what each layer measured
+        out to be worth.
+      </p>
+      <div class="home-wp-cta">Read the whitepaper →</div>
+    </a>
+    <div class="home-sec">Companion essays</div>
     {posts.length === 0 && <p class="home-empty">First articles are being drafted.</p>}
     <ul class="home-list">
       {
@@ -52,6 +63,57 @@ const posts = (await getCollection("posts", ({ data }) => !data.draft)).sort(
     font-family: var(--mono);
     color: var(--ink2);
     font-size: 14px;
+  }
+  .home-wp {
+    display: block;
+    border: var(--med) solid var(--ink);
+    padding: 18px 20px 16px;
+    margin: 24px 0 8px;
+    text-decoration: none;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  .home-wp:hover {
+    background: var(--paper2);
+  }
+  .home-wp-tag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink2);
+  }
+  .home-wp-title {
+    font-family: var(--cad);
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.05;
+    text-transform: uppercase;
+    margin: 6px 0 8px;
+  }
+  .home-wp-desc {
+    margin: 0 0 10px;
+    color: var(--ink2);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .home-wp-cta {
+    font-family: var(--cad);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .home-sec {
+    font-family: var(--cad);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink2);
+    margin-top: 22px;
+    border-bottom: var(--hr) solid var(--hair);
+    padding-bottom: 6px;
   }
   .home-list {
     list-style: none;
