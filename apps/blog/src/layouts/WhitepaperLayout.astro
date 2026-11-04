@@ -1,0 +1,206 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+
+/**
+ * Single-page whitepaper shell: sticky numbered TOC with scrollspy on wide
+ * screens, a collapsible TOC on narrow ones. Receives `headings` injected
+ * by Astro for MDX pages that declare this layout.
+ */
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+interface Props {
+  frontmatter: {
+    title: string;
+    description: string;
+    date: string;
+    words?: number;
+  };
+  headings: Heading[];
+}
+const { frontmatter, headings } = Astro.props;
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const minutes = frontmatter.words ? Math.max(1, Math.round(frontmatter.words / 220)) : null;
+---
+
+<BaseLayout title={frontmatter.title} description={frontmatter.description}>
+  <div class="wp">
+    <aside class="wp-side">
+      <nav class="wp-toc" aria-label="Contents">
+        <div class="wp-toc-hd">Contents</div>
+        {
+          toc.map((h) => (
+            <a class={`wp-toc-link wp-toc-link--d${h.depth}`} href={`#${h.slug}`}>
+              {h.text}
+            </a>
+          ))
+        }
+      </nav>
+    </aside>
+    <article class="wp-main">
+      <header class="wp-head">
+        <div class="wp-meta">
+          <span>Technical report</span>
+          <span>·</span>
+          <time>{frontmatter.date}</time>
+          {minutes && <span>· {minutes} min read</span>}
+        </div>
+        <h1 class="wp-title">{frontmatter.title}</h1>
+        <p class="wp-abstract">{frontmatter.description}</p>
+        <details class="wp-toc-fold">
+          <summary>Contents</summary>
+          {
+            toc.map((h) => (
+              <a class={`wp-toc-link wp-toc-link--d${h.depth}`} href={`#${h.slug}`}>
+                {h.text}
+              </a>
+            ))
+          }
+        </details>
+      </header>
+      <div class="prose wp-prose">
+        <slot />
+      </div>
+    </article>
+  </div>
+</BaseLayout>
+
+<script>
+  // Scrollspy: highlight the TOC entry of the section currently in view.
+  const links = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>(".wp-side .wp-toc-link"),
+  );
+  const bySlug = new Map(links.map((a) => [a.hash.slice(1), a]));
+  const targets = Array.from(document.querySelectorAll(".wp-prose h2[id], .wp-prose h3[id]"));
+  let current: HTMLAnchorElement | null = null;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const link = bySlug.get(entry.target.id);
+          if (link) {
+            current?.classList.remove("is-current");
+            link.classList.add("is-current");
+            current = link;
+          }
+        }
+      }
+    },
+    { rootMargin: "0px 0px -75% 0px" },
+  );
+  for (const target of targets) {
+    observer.observe(target);
+  }
+</script>
+
+<style is:global>
+  .wp {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 36px 20px 0;
+  }
+  .wp-side {
+    display: none;
+  }
+  .wp-main {
+    max-width: 680px;
+    margin: 0 auto;
+    min-width: 0;
+  }
+  .wp-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink2);
+  }
+  .wp-title {
+    font-family: var(--cad);
+    font-weight: 700;
+    font-size: clamp(30px, 5.5vw, 42px);
+    line-height: 1.02;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    margin: 10px 0 10px;
+  }
+  .wp-abstract {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink2);
+    border-left: 3px solid var(--ink);
+    padding-left: 16px;
+    margin: 0 0 18px;
+  }
+  .wp-head {
+    border-bottom: var(--med) solid var(--ink);
+    margin-bottom: 28px;
+  }
+  .wp-toc-hd {
+    font-family: var(--cad);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border-bottom: var(--med) solid var(--ink);
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  .wp-toc-link {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--ink2);
+    text-decoration: none;
+    padding: 3px 0 3px 8px;
+    border-left: 2px solid transparent;
+  }
+  .wp-toc-link--d3 {
+    padding-left: 22px;
+    font-size: 11.5px;
+  }
+  .wp-toc-link:hover {
+    color: var(--ink);
+  }
+  .wp-toc-link.is-current {
+    color: var(--ink);
+    border-left-color: var(--ink);
+    background: var(--paper2);
+  }
+  .wp-toc-fold {
+    font-family: var(--mono);
+    font-size: 13px;
+    border: var(--hr) solid var(--hair);
+    padding: 8px 12px;
+    margin: 0 0 18px;
+  }
+  .wp-toc-fold summary {
+    font-family: var(--cad);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  @media (min-width: 1100px) {
+    .wp {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 40px;
+    }
+    .wp-side {
+      display: block;
+    }
+    .wp-toc {
+      position: sticky;
+      top: 24px;
+    }
+    .wp-toc-fold {
+      display: none;
+    }
+  }
+</style>
