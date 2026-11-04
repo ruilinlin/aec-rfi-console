@@ -37,3 +37,16 @@ pnpm build       # all workspaces
 ```
 
 Node 22 (see `.nvmrc`), pnpm 9.
+
+## Deployment (Cloudflare Workers, two Workers from one repo)
+
+| Worker | Domain | Build command | Deploy command |
+|---|---|---|---|
+| `aec-rfi-console` | aec-rfi.ruilinsun.com | `pnpm --filter console build` | `npx wrangler deploy` (root `wrangler.jsonc`) |
+| `aec-rfi-blog` | aec-rfi.blog.ruilinsun.com | `pnpm --filter blog build` | `npx wrangler deploy -c apps/blog/wrangler.jsonc` |
+
+For both Workers in the Cloudflare dashboard: Root directory `/` (the monorepo installs at
+the root; asset paths live in each wrangler config), and disable non-production branch
+builds — PR quality gates are this repo's GitHub CI, and preview builds trip the Worker
+name check. Bind domains under the project's Domains tab; if the two-level blog subdomain
+stalls on certificate issuance, fall back to `aec-rfi-blog.ruilinsun.com`.

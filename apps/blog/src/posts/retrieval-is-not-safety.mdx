@@ -1,0 +1,111 @@
+---
+title: "Retrieval Is Not Safety"
+description: "A RAG agent with perfect retrieval still cited superseded revisions 62% of the time and answered every unanswerable trap. The safety lives in the layers after retrieval."
+date: 2026-11-04
+tags: ["rag", "evals", "aec"]
+---
+
+import { PipelineReplay } from "../components/PipelineReplay";
+import ResultsTable from "../components/ResultsTable.astro";
+import Finding from "../components/Finding.astro";
+import answerable from "../data/answerable.json";
+import gap from "../data/gap.json";
+
+On a construction site, a Request for Information (RFI) is how a contractor asks the design
+team to resolve an ambiguity: *how far apart can these fasteners be, which revision governs,
+can we substitute this product?* The answer gets built into the building. A wrong answer is
+rework, a claim, or a safety defect — which makes RFIs a brutal benchmark for retrieval-augmented
+generation: the answer must be **cited**, the citation must come from the **governing revision**,
+and when the spec is silent the only correct answer is **"the spec is silent."**
+
+I built [aec-rfi-agent](https://github.com/ruilinlin/aec-rfi-agent) to test one question: how much
+of that safety comes from retrieval quality, and how much from what happens after retrieval?
+
+## The system in one paragraph
+
+A LangGraph pipeline over 12 UFGS specification sections (1,524 chunks in PostgreSQL + pgvector,
+voyage-3.5 embeddings, claude-sonnet-5 drafting): **classify** the RFI and extract section-code
+filters → **retrieve** with hybrid search (dense cosine + keyword tsvector, fused by Reciprocal
+Rank Fusion) → **cross_check** every candidate against a supersedes graph parsed from the
+documents themselves → **draft** an answer that may only cite provided chunks → **verify** each
+quote verbatim against the source and review every claim. If verification fails, the output is
+not a worse answer — it is a `GapReport` naming what was searched and why nothing governs.
+
+Here is a real recorded run, replayed on its actual per-stage timings:
+
+<PipelineReplay client:visible scenario={answerable} />
+
+## The experiment
+
+RFI-Bench: 40 test items (clarification, conflict, substitution, and unanswerable traps with
+near-miss sections), drafted with LLM assistance and verified item by item against the corpus.
+The test split was frozen before any test run, used exactly once, and never for tuning. Seven
+configurations ran in a single pass; failed items (2 of 280, truncation-class) were recorded and
+excluded, and clean configs were never re-run.
+
+<ResultsTable
+  caption="RFI-Bench test split - 40 frozen items, single run. cit-P/R = citation precision/recall; abstain-unans = abstains on unanswerable items; stale = answers citing a superseded revision."
+  rows={[
+    { config: "b0 LLM-only", recall: "0%", citP: "0%", citR: "0%", abstain: "0%", stale: "—" },
+    { config: "b1 naive RAG", recall: "53%", citP: "31%", citR: "39%", abstain: "0%", stale: "0%" },
+    { config: "b2 hybrid RAG", recall: "100%", citP: "87%", citR: "100%", abstain: "0%", stale: "62%" },
+    { config: "ours", recall: "100%", citP: "86%", citR: "100%", abstain: "88%", stale: "0%", ours: true },
+    { config: "− cross_check", recall: "100%", citP: "80%", citR: "100%", abstain: "88%", stale: "86%" },
+    { config: "− verify", recall: "97%", citP: "77%", citR: "97%", abstain: "0%", stale: "0%" },
+    { config: "− section chunking", recall: "59%", citP: "39%", citR: "52%", abstain: "100%", stale: "0%" },
+  ]}
+/>
+
+The row to stare at is **b2**. Hybrid retrieval alone achieves *perfect* recall — every gold
+chunk reaches the model — and respectable citation quality. And yet it cites a superseded
+revision on **62%** of items where an older revision exists, and it answers **every single
+unanswerable trap**. Retrieval found the right text; nothing told the system which text was
+allowed to govern, or that declining was an option.
+
+<Finding label="Thesis" title="Perfect retrieval, unsafe answers">
+  Recall@10 of 100% coexists with a 62% stale-citation rate and a 0% abstention rate. Retrieval
+  quality and answer safety are different axes; the second one is built in the layers after
+  retrieval.
+</Finding>
+
+## What each layer buys, isolated
+
+The ablations cut one layer at a time from the full system:
+
+- **Remove cross_check** (the deterministic supersedes-graph gate): stale rate jumps 0% → 86%.
+  One layer of governance is worth 86 points of revision safety — and it costs 8 milliseconds,
+  because it is a graph lookup, not an LLM call.
+- **Remove verify** (verbatim quote check + claim review): abstention collapses 88% → 0%. The
+  verify node *is* the abstention mechanism; without it the agent answers everything, confidently.
+- **Remove section-aware chunking** (fall back to fixed 1,500-char windows): recall drops 41
+  points and citation precision 47. Chunks that respect clause boundaries are what make a
+  citation like "09 51 00 / 3.1.5" possible at all.
+
+The baseline with nothing after retrieval, b0, sets the floor: asked for a paint color with no
+color schedule in the corpus, it invented "Sherwin-Williams SW 7036 'Accessible Beige'" — a
+specific, plausible, fabricated answer. That is the failure mode every layer above exists to
+prevent.
+
+## What declining looks like
+
+The unanswerable traps are questions a busy human might answer from the near-miss section. The
+full system returns a structured refusal instead — here is one, replayed from the recorded run:
+
+<PipelineReplay client:visible scenario={gap} />
+
+A `GapReport` is not an error state. It names the sections searched, the closest candidates, and
+why none of them governs — which is exactly the information a design team needs to route the RFI
+to a human. The cost of this conservatism on the dev set was one false abstention on a borderline
+item with a typo in its source table; in construction, a deferral costs a day while a wrong
+answer costs a rework order, so the conservative side of the frontier is the right side to err on.
+
+## Honest numbers
+
+Every response carries its own telemetry: a real run costs about **$0.02 and 5–20 seconds**,
+with verification dominating latency and the deterministic cross_check adding ~8ms. Governance
+is nearly free; verification is the cost — and the thing it buys, per the table above, is the
+entire difference between a search engine and something you can hand a draft answer to.
+
+*Drafted answers are for licensed-professional review, never final. Try the recorded scenarios
+yourself in the [interactive console](https://aec-rfi.ruilinsun.com), or read the
+[source](https://github.com/ruilinlin/aec-rfi-agent).*

@@ -1,0 +1,100 @@
+---
+/** The frozen-test results table: 40 items, single run, no reruns of clean configs. */
+interface Row {
+  config: string;
+  recall: string;
+  citP: string;
+  citR: string;
+  abstain: string;
+  stale: string;
+  ours?: boolean;
+}
+interface Props {
+  rows: Row[];
+  caption: string;
+}
+const { rows, caption } = Astro.props;
+---
+
+<figure class="results">
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>config</th>
+          <th>recall@10</th>
+          <th>cit-P</th>
+          <th>cit-R</th>
+          <th>abstain-unans</th>
+          <th>stale rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((row) => (
+            <tr class={row.ours ? "is-ours" : undefined}>
+              <td>{row.config}</td>
+              <td>{row.recall}</td>
+              <td>{row.citP}</td>
+              <td>{row.citR}</td>
+              <td>{row.abstain}</td>
+              <td>{row.stale}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <figcaption class="results-cap">{caption}</figcaption>
+</figure>
+
+<style>
+  .results {
+    margin: 0 0 24px;
+  }
+  .table-scroll {
+    overflow-x: auto;
+  }
+  table {
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.45;
+    min-width: 560px;
+  }
+  th,
+  td {
+    border: var(--hr) solid var(--hair);
+    padding: 6px 12px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  td:not(:first-child) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    font-family: var(--cad);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--paper2);
+  }
+  .is-ours td {
+    border-top: var(--med) solid var(--ink);
+    border-bottom: var(--med) solid var(--ink);
+    font-weight: 600;
+  }
+  .is-ours td:first-child {
+    border-left: var(--med) solid var(--ink);
+  }
+  .is-ours td:last-child {
+    border-right: var(--med) solid var(--ink);
+  }
+  .results-cap {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink2);
+    padding-top: 6px;
+  }
+</style>
