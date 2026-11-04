@@ -1,0 +1,9 @@
+{
+  // Second Worker of this repo: the blog's static build.
+  // Deploy from the repo root: npx wrangler deploy -c apps/blog/wrangler.jsonc
+  "name": "aec-rfi-blog",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist"
+  }
+}
