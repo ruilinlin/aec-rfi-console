@@ -1,8 +1,10 @@
 import { SheetFrame, TitleBlock } from "@rfi/drafting-kit";
 import { useReducer } from "react";
 import { LiveSection } from "./LiveSection";
+import { NavRail } from "./NavRail";
 import { PipelineSteps } from "./PipelineSteps";
 import { ResponseCard } from "./ResponseCard";
+import { SiteHeader } from "./SiteHeader";
 import { StatusBadge } from "./StatusBadge";
 import { SCENARIOS, type Scenario } from "./scenarios";
 import { useBackendStatus } from "./useBackendStatus";
@@ -37,6 +39,8 @@ export function Console() {
   const stages = state.scenario?.result.usage?.stages ?? [];
   return (
     <div className="wrap">
+      <SiteHeader status={backend} />
+      <NavRail />
       <SheetFrame
         titleBlock={
           <TitleBlock

@@ -1,0 +1,81 @@
+.sh {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: center;
+  justify-content: space-between;
+  border: var(--hvy) solid var(--ink);
+  background: var(--paper);
+  padding: 7px 14px;
+  margin-bottom: 10px;
+}
+.sh-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-width: 0;
+}
+.sh-os {
+  font-family: var(--cad);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.sh-lamp {
+  font-family: var(--cad);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--ink2);
+  white-space: nowrap;
+}
+.sh-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background: var(--amber);
+}
+.sh-lamp--online .sh-dot {
+  background: var(--green);
+  animation: sh-pulse 1.8s infinite;
+}
+.sh-lamp--offline .sh-dot {
+  background: var(--red);
+}
+.sh-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  align-items: center;
+}
+.sh-nav a {
+  font-family: var(--cad);
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 4px 2px;
+}
+.sh-nav a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+@keyframes sh-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sh-lamp--online .sh-dot {
+    animation: none;
+  }
+}

@@ -8,9 +8,26 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 .wrap {
-  max-width: 1180px;
+  max-width: 1480px;
   margin: 0 auto;
-  padding: 16px 12px 24px;
+  padding: clamp(10px, 1.6vw, 22px) clamp(10px, 2vw, 28px) clamp(16px, 2vw, 28px);
+  box-sizing: border-box;
+  /* The sheet should read as a full drawing sheet: the wrap fills the
+   * viewport and the sheet (flex child below) stretches to the remainder. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.wrap > .dk-sheet {
+  flex: 1;
+}
+/* Clearance for the fixed NavRail; symmetric so the sheet stays centered. */
+@media (min-width: 1100px) {
+  .wrap {
+    padding-left: 64px;
+    padding-right: 64px;
+  }
 }
 .kitchen h1 {
   font-family: var(--cad);

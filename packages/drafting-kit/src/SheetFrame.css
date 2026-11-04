@@ -59,7 +59,8 @@
 .dk-field {
   grid-area: 2 / 2 / 3 / 3;
   display: grid;
-  grid-template-columns: 1fr 230px;
+  /* Title block column scales down before the drawing area gets squeezed. */
+  grid-template-columns: 1fr clamp(190px, 18vw, 240px);
   min-width: 0;
 }
 .dk-main {
