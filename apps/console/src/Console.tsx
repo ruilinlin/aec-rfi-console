@@ -3,6 +3,7 @@ import { useReducer } from "react";
 import { LiveSection } from "./LiveSection";
 import { PipelineSteps } from "./PipelineSteps";
 import { ResponseCard } from "./ResponseCard";
+import { SiteHeader } from "./SiteHeader";
 import { StatusBadge } from "./StatusBadge";
 import { SCENARIOS, type Scenario } from "./scenarios";
 import { useBackendStatus } from "./useBackendStatus";
@@ -37,6 +38,7 @@ export function Console() {
   const stages = state.scenario?.result.usage?.stages ?? [];
   return (
     <div className="wrap">
+      <SiteHeader status={backend} />
       <SheetFrame
         titleBlock={
           <TitleBlock
