@@ -1,6 +1,7 @@
 import { SheetFrame, TitleBlock } from "@rfi/drafting-kit";
 import { useReducer } from "react";
 import { LiveSection } from "./LiveSection";
+import { NavRail } from "./NavRail";
 import { PipelineSteps } from "./PipelineSteps";
 import { ResponseCard } from "./ResponseCard";
 import { SiteHeader } from "./SiteHeader";
@@ -39,6 +40,7 @@ export function Console() {
   return (
     <div className="wrap">
       <SiteHeader status={backend} />
+      <NavRail />
       <SheetFrame
         titleBlock={
           <TitleBlock
