@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "console", "dev", "--port", "5199"],
       "port": 5199
+    },
+    {
+      "name": "blog",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "blog", "preview", "--port", "4321"],
+      "port": 4321
     }
   ]
 }
