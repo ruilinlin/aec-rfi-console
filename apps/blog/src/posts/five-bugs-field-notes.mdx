@@ -1,0 +1,94 @@
+---
+title: "Field Notes: Five Bugs That Taught Me RAG Engineering"
+description: "Schema drift, rate limits backoff can't fix, section codes keyword search can't find, a bracket that ate clause numbers, and a script that lied about transactions."
+date: 2026-11-04
+tags: ["engineering", "postmortem", "rag"]
+---
+
+import Finding from "../components/Finding.astro";
+
+The headline result of [aec-rfi-agent](https://github.com/ruilinlin/aec-rfi-agent) is an
+ablation table ([previous post](/posts/retrieval-is-not-safety/)). This post is the other half
+of the story: five small production bugs that each changed how I build retrieval systems. None
+of them were exotic. All of them shipped past tests first.
+
+## 1. The field that was populated in the sample
+
+The corpus comes from WBDG's document API. I wrote the downloader against one sample document —
+recently updated, every field populated — and selected PDFs by `mimeType`. In production the API
+returns `mimeType` (and `fileSize`) as `null` for **11 of 12** documents. The sample I happened
+to develop against was the only fresh one.
+
+<Finding label="Finding 01" title="A populated field is not a schema guarantee">
+  One sample proves a field <em>can</em> be populated, not that it <em>is</em>. Select on the
+  property you actually need (the <code>.pdf</code> extension on <code>fileName</code>), and
+  treat every nullable-in-the-wild field as nullable in code.
+</Finding>
+
+## 2. The retry loop that could never succeed
+
+Voyage's free tier allows 10K embedding tokens per minute. My ingest batched 32 chunks per
+request — some batches alone exceeded the per-minute quota. Exponential backoff retried
+forever: the request was over quota *by construction*, so no amount of waiting fixed it. The
+diagnostic that cracked it: a tiny request succeeded instantly, proving the limit was
+per-request size, not frequency.
+
+<Finding label="Finding 02" title="Backoff cannot fix an over-quota request">
+  Defense has an ordering: shape requests under quota (token-budget batching) → proactive
+  throttling between requests → exponential backoff as the safety net. Backoff alone turns a
+  sizing bug into an infinite loop.
+</Finding>
+
+## 3. The query term that lives in a different table
+
+"09 29 00 fastener spacing" returned zero keyword hits — for a corpus that contains section
+09 29 00. Why: `plainto_tsquery` ANDs all terms, and a chunk's text does not contain its own
+section number. The code lives in `documents.section_code`, a column, not in the prose. The
+common claim "BM25 handles exact identifiers" quietly assumes the identifier appears in the
+indexed text.
+
+<Finding label="Finding 03" title="Identifiers belong in metadata filters, not queries">
+  Section codes are routing information: extract them in the classify stage and apply them as
+  SQL filters. Rank fusion (RRF) degrades gracefully when the keyword ranking comes back empty.
+</Finding>
+
+## 4. The bracket that ate the clause numbers
+
+Writing gold citations for the benchmark forced me to verify every clause path against the
+database — and clause 1.5 of one section wasn't there. UFGS wraps optional clauses in square
+brackets, so a heading line can begin with <code>[3.1.5.2</code> or <code>]1.5</code>; my
+heading detector didn't match bracket-prefixed headings, so those clauses silently merged into
+the previous chunk. A sealant temperature limit was citable only as part of a "green
+certifications" clause. One `lstrip("[]")` later, the corpus grew from 1,232 to 1,524 chunks.
+
+The ordering mattered more than the fix: the chunker was repaired **before** the test set was
+frozen. Freeze first and the bug gets baked into the gold labels — the agent then "correctly"
+cites wrong clause numbers forever.
+
+<Finding label="Finding 04" title="Benchmark construction is a bug detector">
+  Hand-verifying gold labels against the live database is not bookkeeping - it is the cheapest
+  systematic audit of the ingest pipeline you will ever run. Fix what it finds before freezing.
+</Finding>
+
+## 5. The script that said CLOSED while the database said nothing
+
+The gap-replay script re-runs previously unanswerable questions after the corpus grows, printing
+<code>CLOSED</code> for each one it resolves. Review caught the lie: every <code>UPDATE</code>
+sat in one open transaction, so a single LLM failure mid-run rolled back all of them — after
+stdout had already announced success for each. The log asserted state the database never held.
+
+<Finding label="Finding 05" title="stdout is not a commit">
+  Per-row progress messages require per-row commits (autocommit + per-item error isolation), or
+  the message must move after the commit. A human reads the log as state; make the log unable
+  to get ahead of the database.
+</Finding>
+
+## The meta-lesson
+
+Four of these five were caught by process, not by luck: benchmark construction audited the
+chunker, and a three-lens adversarial review (correctness / integrity / coverage) caught the
+transaction lie and more. Every review run on this project found at least one real defect that
+the implementation *and its own tests* had missed. The tests encode the author's assumptions;
+the review attacks them.
+
+*Next: the console these replays come from — [aec-rfi.ruilinsun.com](https://aec-rfi.ruilinsun.com).*
