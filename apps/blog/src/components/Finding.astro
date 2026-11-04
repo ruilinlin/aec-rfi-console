@@ -1,0 +1,57 @@
+---
+/** Drawing-flavored callout for one engineering finding and its takeaway. */
+interface Props {
+  label: string;
+  title: string;
+}
+const { label, title } = Astro.props;
+---
+
+<aside class="finding">
+  <div class="finding-label">{label}</div>
+  <div class="finding-title">{title}</div>
+  <div class="finding-body">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  .finding {
+    border: var(--med) solid var(--ink);
+    padding: 16px 18px 12px;
+    margin: 0 0 24px;
+    position: relative;
+    background: var(--paper);
+  }
+  .finding-label {
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--cad);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 2px 9px 1px;
+  }
+  .finding-title {
+    font-family: var(--cad);
+    font-weight: 700;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin: 4px 0 6px;
+  }
+  .finding-body {
+    font-size: 16px;
+    line-height: 1.65;
+  }
+  .finding-body :global(p) {
+    margin: 0 0 10px;
+  }
+  .finding-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+</style>

@@ -1,0 +1,27 @@
+---
+/** Figure with a mono caption line, drawing-sheet style. */
+interface Props {
+  caption: string;
+}
+const { caption } = Astro.props;
+---
+
+<figure class="fig">
+  <slot />
+  <figcaption class="fig-cap">{caption}</figcaption>
+</figure>
+
+<style>
+  .fig {
+    margin: 0 0 24px;
+  }
+  .fig-cap {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    color: var(--ink2);
+    border-top: var(--hr) solid var(--hair);
+    padding-top: 6px;
+    margin-top: 8px;
+  }
+</style>
