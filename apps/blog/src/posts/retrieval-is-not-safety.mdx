@@ -48,7 +48,7 @@ excluded, and clean configs were never re-run.
 <ResultsTable
   caption="RFI-Bench test split - 40 frozen items, single run. cit-P/R = citation precision/recall; abstain-unans = abstains on unanswerable items; stale = answers citing a superseded revision."
   rows={[
-    { config: "b0 LLM-only", recall: "0%", citP: "0%", citR: "0%", abstain: "0/8", falseAbstain: "0/31", stale: "0/8" },
+    { config: "b0 LLM-only", recall: "0%", citP: "0%", citR: "0%", abstain: "0/8", falseAbstain: "0/31", stale: "n/a" },
     { config: "b1 naive RAG", recall: "53%", citP: "31%", citR: "39%", abstain: "0/8", falseAbstain: "0/32", stale: "0/8" },
     { config: "b2 hybrid RAG", recall: "100%", citP: "87%", citR: "100%", abstain: "0/8", falseAbstain: "0/32", stale: "5/8 (62%)" },
     { config: "ours", recall: "100%", citP: "86%", citR: "100%", abstain: "7/8 (88%)", falseAbstain: "1/32 (3%)", stale: "0/8", ours: true },
@@ -80,7 +80,7 @@ allowed to govern, or that declining was an option.
 The ablations cut one layer at a time from the full system:
 
 - **Remove cross_check** (the deterministic supersedes-graph gate): stale rate jumps 0% → 86%.
-  One layer of governance is worth 86 points of revision safety — and it costs 8 milliseconds,
+  One layer of governance is worth 86 points of revision safety — and it costs single-digit milliseconds,
   because it is a graph lookup, not an LLM call.
 - **Remove verify** (verbatim quote check + claim review): abstention collapses 88% → 0%. The
   verify node *is* the abstention mechanism; without it the agent answers everything, confidently.
@@ -109,7 +109,8 @@ answer costs a rework order, so the conservative side of the frontier is the rig
 ## Honest numbers
 
 Every response carries its own telemetry: a real run costs about **$0.02 and 5–20 seconds**,
-with verification dominating latency and the deterministic cross_check adding ~8ms. Governance
+— on cited answers verification is typically the longest stage, while the deterministic
+cross_check adds single-digit milliseconds. Governance
 is nearly free; verification is the cost — and the thing it buys, per the table above, is the
 entire difference between a search engine and something you can hand a draft answer to.
 

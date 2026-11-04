@@ -139,7 +139,7 @@ The hybrid search of section 4, with the classify node's filters applied.
 
 A deterministic walk of the supersedes graph from 3.2: any candidate chunk whose document is
 superseded by another document in the corpus is flagged before drafting. No LLM call — it is
-a graph lookup that runs in ~8 milliseconds, and section 7 shows it is worth 86 points of
+a graph lookup that runs in single-digit milliseconds, and section 7 shows it is worth 86 points of
 stale-citation rate.
 
 ### 5.4 draft
@@ -197,7 +197,7 @@ never re-rolled, because re-rolling until numbers improve is cherry-picking with
 <ResultsTable
   caption="RFI-Bench test split - 40 frozen items, single run. cit-P/R = citation precision/recall; abstain-unans = abstains on unanswerable items; stale = answers citing a superseded revision."
   rows={[
-    { config: "b0 LLM-only", recall: "0%", citP: "0%", citR: "0%", abstain: "0/8", falseAbstain: "0/31", stale: "0/8" },
+    { config: "b0 LLM-only", recall: "0%", citP: "0%", citR: "0%", abstain: "0/8", falseAbstain: "0/31", stale: "n/a" },
     { config: "b1 naive RAG", recall: "53%", citP: "31%", citR: "39%", abstain: "0/8", falseAbstain: "0/32", stale: "0/8" },
     { config: "b2 hybrid RAG", recall: "100%", citP: "87%", citR: "100%", abstain: "0/8", falseAbstain: "0/32", stale: "5/8 (62%)" },
     { config: "ours", recall: "100%", citP: "86%", citR: "100%", abstain: "7/8 (88%)", falseAbstain: "1/32 (3%)", stale: "0/8", ours: true },
@@ -229,7 +229,7 @@ the stale revision if you retrieve it. b2's hybrid retrieval surfaces both revis
 Each ablation removes one layer from the full system:
 
 - **− cross_check**: stale 0/8 → 6/7. Deterministic revision governance is the entire
-  difference, and it costs ~8ms. (6/7 versus b2's 5/8 is a one-item difference on single-digit
+  difference, and it costs single-digit milliseconds. (6/7 versus b2's 5/8 is a one-item difference on single-digit
   denominators - the reading is "most revision-pair items go stale without governance," not
   "removing a layer is worse than the baseline.")
 - **− verify**: abstention on unanswerables 7/8 → 0/8. The verify node *is* the abstention
@@ -282,7 +282,8 @@ the test suite earned its keep before the feature shipped.
 
 A context-variable trace records latency, tokens, and cost per pipeline stage, persisted with
 each request and returned in each response. One real request measures $0.0224 and 21.2s -
-verify accounts for 12.2s of it, while the deterministic cross_check adds 8ms. Governance is
+verify accounts for 12.2s of it, while the deterministic cross_check adds 8ms (5-8ms across
+recorded runs). Governance is
 nearly free; verification is the cost, and section 7 shows what it buys.
 
 ### 8.3 The gap loop
